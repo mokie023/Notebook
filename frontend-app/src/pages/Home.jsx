@@ -69,7 +69,18 @@ export default function Home() {
                 </div>
             </nav>
 
-            <section className="py-5 mt-5">
+            <section
+                className="py-5 mt-5"
+                style={{
+                    backgroundImage: `
+                        linear-gradient(rgba(255,255,255,0.93), rgba(255,255,255,0.93)),
+                        url("/bg.jpg")
+                    `,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                }}
+            >
                 <div className="container">
                     <div className="row justify-content-center text-center">
                         <div className="col-lg-9 col-xl-8">
@@ -79,6 +90,7 @@ export default function Home() {
                                     border: "1px solid #e2e2e2",
                                     color: "#666666",
                                     fontSize: "0.9rem",
+                                    backgroundColor: "rgba(255,255,255,0.75)",
                                 }}
                             >
                                 <NotebookTabs size={16} strokeWidth={1.8} />
