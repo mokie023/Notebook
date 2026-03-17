@@ -2,6 +2,17 @@ import { Link } from "react-router-dom";
 import { NotebookTabs, FileText, CheckSquare, TimerReset } from "lucide-react";
 
 export default function Home() {
+    const colors = {
+        primary: "#0F2744",
+        primaryHover: "#0A1D33",
+        primaryTint: "#EAF0F7",
+        background: "#F7F9FC",
+        white: "#FFFFFF",
+        text: "#0F172A",
+        muted: "#475569",
+        border: "#D9E2EC",
+    };
+
     const features = [
         {
             icon: <FileText size={22} strokeWidth={1.8} />,
@@ -27,18 +38,21 @@ export default function Home() {
         <div
             className="min-vh-100"
             style={{
-                backgroundColor: "#ffffff",
-                color: "#111111",
+                backgroundColor: colors.background,
+                color: colors.text,
                 fontFamily:
                     'Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
             }}
         >
-            <nav className="navbar navbar-expand-lg bg-transparent py-3">
+            <nav
+                className="navbar navbar-expand-lg py-3"
+                style={{ backgroundColor: "transparent" }}
+            >
                 <div className="container">
                     <Link
                         to="/"
                         className="navbar-brand d-flex align-items-center gap-2 fw-semibold m-0 text-decoration-none"
-                        style={{ color: "#111111", fontSize: "1.05rem" }}
+                        style={{ color: colors.primary, fontSize: "1.05rem" }}
                     >
                         <NotebookTabs size={22} strokeWidth={2} />
                         <span>NoteBook</span>
@@ -48,7 +62,7 @@ export default function Home() {
                         <Link
                             to="/login"
                             className="text-decoration-none small"
-                            style={{ color: "#111111" }}
+                            style={{ color: colors.primary }}
                         >
                             Log in
                         </Link>
@@ -57,9 +71,9 @@ export default function Home() {
                             to="/register"
                             className="btn btn-sm px-3 py-2 rounded-2"
                             style={{
-                                backgroundColor: "#111111",
-                                color: "#ffffff",
-                                border: "1px solid #111111",
+                                backgroundColor: colors.primary,
+                                color: colors.white,
+                                border: `1px solid ${colors.primary}`,
                                 fontWeight: 500,
                             }}
                         >
@@ -73,7 +87,11 @@ export default function Home() {
                 className="py-5 mt-5"
                 style={{
                     backgroundImage: `
-                        linear-gradient(rgba(255,255,255,0.93), rgba(255,255,255,0.93)),
+                        linear-gradient(
+                            to bottom,
+                            rgba(247,249,252,0.94),
+                            rgba(247,249,252,0.90)
+                        ),
                         url("/bg.jpg")
                     `,
                     backgroundSize: "cover",
@@ -87,10 +105,10 @@ export default function Home() {
                             <div
                                 className="d-inline-flex align-items-center gap-2 px-3 py-2 mb-4 rounded-pill"
                                 style={{
-                                    border: "1px solid #e2e2e2",
-                                    color: "#666666",
+                                    border: `1px solid ${colors.border}`,
+                                    color: colors.primary,
                                     fontSize: "0.9rem",
-                                    backgroundColor: "rgba(255,255,255,0.75)",
+                                    backgroundColor: "rgba(255,255,255,0.78)",
                                 }}
                             >
                                 <NotebookTabs size={16} strokeWidth={1.8} />
@@ -103,7 +121,7 @@ export default function Home() {
                                     fontSize: "clamp(2.5rem, 6vw, 4.75rem)",
                                     lineHeight: 1.05,
                                     letterSpacing: "-0.02em",
-                                    color: "#111111",
+                                    color: colors.text,
                                 }}
                             >
                                 Your workspace. Simplified.
@@ -115,7 +133,7 @@ export default function Home() {
                                     maxWidth: "650px",
                                     fontSize: "1.1rem",
                                     lineHeight: 1.7,
-                                    color: "#666666",
+                                    color: colors.muted,
                                 }}
                             >
                                 Organize your notes, tasks, and ideas in a modern digital
@@ -128,9 +146,9 @@ export default function Home() {
                                     to="/register"
                                     className="btn px-4 py-3 rounded-2"
                                     style={{
-                                        backgroundColor: "#111111",
-                                        color: "#ffffff",
-                                        border: "1px solid #111111",
+                                        backgroundColor: colors.primary,
+                                        color: colors.white,
+                                        border: `1px solid ${colors.primary}`,
                                         fontWeight: 500,
                                     }}
                                 >
@@ -141,9 +159,9 @@ export default function Home() {
                                     to="/login"
                                     className="btn px-4 py-3 rounded-2"
                                     style={{
-                                        backgroundColor: "#ffffff",
-                                        color: "#111111",
-                                        border: "1px solid #e2e2e2",
+                                        backgroundColor: colors.white,
+                                        color: colors.primary,
+                                        border: `1px solid ${colors.border}`,
                                         fontWeight: 500,
                                     }}
                                 >
@@ -163,8 +181,8 @@ export default function Home() {
                                 <div
                                     className="h-100 p-4 rounded-3"
                                     style={{
-                                        backgroundColor: "#ffffff",
-                                        border: "1px solid #e2e2e2",
+                                        backgroundColor: colors.white,
+                                        border: `1px solid ${colors.border}`,
                                     }}
                                 >
                                     <div
@@ -172,9 +190,9 @@ export default function Home() {
                                         style={{
                                             width: "42px",
                                             height: "42px",
-                                            border: "1px solid #e2e2e2",
-                                            color: "#111111",
-                                            backgroundColor: "#ffffff",
+                                            border: `1px solid ${colors.border}`,
+                                            color: colors.primary,
+                                            backgroundColor: colors.primaryTint,
                                         }}
                                     >
                                         {feature.icon}
@@ -184,7 +202,7 @@ export default function Home() {
                                         className="fw-semibold mb-2 text-start"
                                         style={{
                                             fontSize: "1.1rem",
-                                            color: "#111111",
+                                            color: colors.text,
                                         }}
                                     >
                                         {feature.title}
@@ -193,7 +211,7 @@ export default function Home() {
                                     <p
                                         className="mb-0 text-start"
                                         style={{
-                                            color: "#666666",
+                                            color: colors.muted,
                                             lineHeight: 1.7,
                                             fontSize: "0.98rem",
                                         }}
