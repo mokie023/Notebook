@@ -44,10 +44,7 @@ export default function Home() {
                     'Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
             }}
         >
-            <nav
-                className="navbar navbar-expand-lg py-3"
-                style={{ backgroundColor: "transparent" }}
-            >
+            <nav className="navbar navbar-expand-lg py-3" style={{ backgroundColor: "transparent" }}>
                 <div className="container">
                     <Link
                         to="/"
@@ -83,22 +80,8 @@ export default function Home() {
                 </div>
             </nav>
 
-            <section
-                className="py-5 mt-5"
-                style={{
-                    backgroundImage: `
-                        linear-gradient(
-                            to bottom,
-                            rgba(247,249,252,0.94),
-                            rgba(247,249,252,0.90)
-                        ),
-                        url("/bg.jpg")
-                    `,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    backgroundRepeat: "no-repeat",
-                }}
-            >
+            {/* Hero without background image */}
+            <section className="py-5 mt-5">
                 <div className="container">
                     <div className="row justify-content-center text-center">
                         <div className="col-lg-9 col-xl-8">
@@ -170,6 +153,23 @@ export default function Home() {
                             </div>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            {/* Separate image section below hero */}
+            <section className="pb-5">
+                <div className="container">
+                    <div
+                        className="w-100 rounded-4"
+                        style={{
+                            height: "420px",
+                            backgroundImage: `url("/bg.jpg")`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            backgroundRepeat: "no-repeat",
+                            border: `1px solid ${colors.border}`,
+                        }}
+                    />
                 </div>
             </section>
 
