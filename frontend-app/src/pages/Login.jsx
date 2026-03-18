@@ -385,6 +385,21 @@ export default function Login() {
                                             />
                                         </div>
 
+                                        // Display success message if login is successful
+                                        {message && (
+                                            <div
+                                                className="mb-3 px-3 py-3 rounded-3"
+                                                style={{
+                                                    backgroundColor: "#ECFDF3",
+                                                    color: "#027A48",
+                                                    fontSize: "0.95rem",
+                                                    border: `1px solid ${colors.border}`,
+                                                }}
+                                            >
+                                                {message}
+                                            </div>
+                                        )}
+
                                         {error && (
                                             <div
                                                 className="mb-3 px-3 py-3 rounded-3"
@@ -398,6 +413,9 @@ export default function Login() {
                                                 {error}
                                             </div>
                                         )}
+
+
+
 
                                         <button
                                             type="submit"
