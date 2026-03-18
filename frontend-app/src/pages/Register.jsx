@@ -34,7 +34,7 @@ export default function Register() {
 
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);  // to track loading state during form submission
 
     const navigate = useNavigate();
 
@@ -53,6 +53,7 @@ export default function Register() {
         });
     }
 
+    // Handle form submission
     async function handleSubmit(e) {
         e.preventDefault();
         setMessage("");
@@ -67,19 +68,39 @@ export default function Register() {
 
         try {
             const response = await api.post("/auth/register", form);
+
             const token = response.data.data?.token || response.data.token;
+            const user = response.data.data?.user || response.data.user;
 
             if (token) {
                 localStorage.setItem("auth_token", token);
-                navigate("/");
+
+                if (user) {
+                    localStorage.setItem("user", JSON.stringify(user));
+                }
+
+                setMessage("Account created successfully. Redirecting to your dashboard...");
+
+                setTimeout(() => {
+                    navigate("/dashboard");
+                }, 1200);
             } else {
-                setMessage("Registration successful! You can now log in.");
+                setMessage("Registration successful. Redirecting to login...");
+
+                setTimeout(() => {
+                    navigate("/login");
+                }, 1200);
             }
         } catch (err) {
-            setError(
-                err.response?.data?.message ||
-                "Registration failed. Please try again."
-            );
+            if (err.response?.data?.errors) {
+                const firstError = Object.values(err.response.data.errors)[0][0];
+                setError(firstError);
+            } else {
+                setError(
+                    err.response?.data?.message ||
+                    "Registration failed. Please try again."
+                );
+            }
         } finally {
             setIsLoading(false);
         }
