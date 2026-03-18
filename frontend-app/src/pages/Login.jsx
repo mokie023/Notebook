@@ -1,11 +1,18 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
-import { NotebookTabs, Github } from "lucide-react";
+import {
+    NotebookTabs,
+    Github,
+    ArrowRight,
+    ShieldCheck,
+    CheckCircle2,
+} from "lucide-react";
 
 export default function Login() {
     const colors = {
         primary: "#0F2744",
+        primarySoft: "#1E3A5F",
         primaryTint: "#EAF0F7",
         background: "#F7F9FC",
         white: "#FFFFFF",
@@ -23,12 +30,14 @@ export default function Login() {
 
     const navigate = useNavigate();
 
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+
     const handleGoogleLogin = () => {
-        window.location.href = "http://localhost:8000/api/v1/auth/google/redirect";
+        window.location.href = `${API_BASE_URL}/auth/google/redirect`;
     };
 
     const handleGithubLogin = () => {
-        window.location.href = "http://localhost:8000/api/v1/auth/github/redirect";
+        window.location.href = `${API_BASE_URL}/auth/github/redirect`;
     };
 
     const handleSubmit = async (e) => {
@@ -59,12 +68,13 @@ export default function Login() {
     const inputStyle = {
         width: "100%",
         padding: "14px 16px",
-        borderRadius: "12px",
+        borderRadius: "14px",
         border: `1px solid ${colors.border}`,
         backgroundColor: colors.white,
         color: colors.text,
         outline: "none",
         fontSize: "0.98rem",
+        transition: "all 0.2s ease",
     };
 
     const labelStyle = {
@@ -78,7 +88,7 @@ export default function Login() {
     const socialBtnStyle = {
         width: "100%",
         padding: "13px 16px",
-        borderRadius: "12px",
+        borderRadius: "14px",
         border: `1px solid ${colors.border}`,
         backgroundColor: colors.white,
         color: colors.text,
@@ -87,173 +97,314 @@ export default function Login() {
         alignItems: "center",
         justifyContent: "center",
         gap: "10px",
+        transition: "all 0.2s ease",
     };
+
+    const benefits = [
+        "Return to your notes, tasks, and focus sessions",
+        "Keep your academic workflow structured and visible",
+        "Continue building momentum with less friction",
+    ];
 
     return (
         <div
-            className="min-vh-100 d-flex align-items-center py-5"
+            className="min-vh-100 d-flex align-items-center py-4 py-lg-5"
             style={{
-                backgroundColor: colors.background,
+                background: "linear-gradient(180deg, #0F2744 0%, #183B63 55%, #244A73 100%)",
                 fontFamily:
                     'Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
             }}
         >
             <div className="container">
                 <div className="row justify-content-center">
-                    <div className="col-md-9 col-lg-6 col-xl-4">
+                    <div className="col-12 col-xl-11">
                         <div
-                            className="p-4 rounded-4"
+                            className="row g-0 overflow-hidden rounded-4"
                             style={{
                                 backgroundColor: colors.white,
                                 border: `1px solid ${colors.border}`,
+                                boxShadow: "0 24px 60px rgba(0, 0, 0, 0.18)",
                             }}
                         >
-                            <div className="text-center mb-4">
-                                <div
-                                    className="d-inline-flex align-items-center justify-content-center rounded-4 mb-3"
-                                    style={{
-                                        width: "60px",
-                                        height: "60px",
-                                        backgroundColor: colors.primaryTint,
-                                        color: colors.primary,
-                                    }}
-                                >
-                                    <NotebookTabs size={30} strokeWidth={2} />
-                                </div>
+                            {/* LEFT PANEL */}
+                            <div
+                                className="col-lg-5 d-none d-lg-flex"
+                                style={{
+                                    background: "linear-gradient(160deg, #102A4A 0%, #183B63 55%, #224C78 100%)",
+                                    color: colors.white,
+                                }}
+                            >
+                                <div className="p-4 p-xl-5 d-flex flex-column justify-content-between w-100">
+                                    <div>
+                                        <Link
+                                            to="/"
+                                            className="d-inline-flex align-items-center gap-2 text-decoration-none mb-5"
+                                            style={{ color: colors.white }}
+                                        >
+                                            <div
+                                                className="d-flex align-items-center justify-content-center rounded-3"
+                                                style={{
+                                                    width: "42px",
+                                                    height: "42px",
+                                                    backgroundColor: "rgba(255,255,255,0.12)",
+                                                    border: "1px solid rgba(255,255,255,0.18)",
+                                                }}
+                                            >
+                                                <NotebookTabs size={20} />
+                                            </div>
+                                            <span className="fw-semibold fs-5">NoteBook</span>
+                                        </Link>
 
-                                <h1
-                                    className="fw-bold mb-2"
-                                    style={{
-                                        color: colors.text,
-                                        fontSize: "1.8rem",
-                                        letterSpacing: "-0.02em",
-                                    }}
-                                >
-                                    Log in to NoteBook
-                                </h1>
+                                        <div
+                                            className="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill mb-4"
+                                            style={{
+                                                backgroundColor: "rgba(255,255,255,0.10)",
+                                                border: "1px solid rgba(255,255,255,0.15)",
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            <ShieldCheck size={16} />
+                                            Welcome back
+                                        </div>
 
-                                <p className="mb-0" style={{ color: colors.muted }}>
-                                    Welcome back. Continue where you left off.
-                                </p>
-                            </div>
+                                        <h2
+                                            className="fw-bold mb-3"
+                                            style={{
+                                                fontSize: "2.4rem",
+                                                lineHeight: 1.1,
+                                                letterSpacing: "-0.03em",
+                                            }}
+                                        >
+                                            Pick up where you left off.
+                                        </h2>
 
-                            <div className="d-grid gap-3 mb-4">
-                                <button
-                                    type="button"
-                                    onClick={handleGoogleLogin}
-                                    style={socialBtnStyle}
-                                >
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        width="18"
-                                        height="18"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                                    </svg>
-                                    Continue with Google
-                                </button>
+                                        <p
+                                            className="mb-4"
+                                            style={{
+                                                color: "rgba(255,255,255,0.82)",
+                                                lineHeight: 1.8,
+                                                fontSize: "1rem",
+                                            }}
+                                        >
+                                            Log back into NoteBook and continue managing your notes,
+                                            priorities, and study flow in one clean academic workspace.
+                                        </p>
 
-                                <button
-                                    type="button"
-                                    onClick={handleGithubLogin}
-                                    style={socialBtnStyle}
-                                >
-                                    <Github size={18} />
-                                    Continue with GitHub
-                                </button>
-                            </div>
+                                        <div className="d-flex flex-column gap-3">
+                                            {benefits.map((item, index) => (
+                                                <div
+                                                    className="d-flex align-items-start gap-3"
+                                                    key={index}
+                                                >
+                                                    <CheckCircle2
+                                                        size={18}
+                                                        style={{
+                                                            marginTop: "3px",
+                                                            color: "#86EFAC",
+                                                            flexShrink: 0,
+                                                        }}
+                                                    />
+                                                    <span
+                                                        style={{
+                                                            color: "rgba(255,255,255,0.88)",
+                                                            lineHeight: 1.6,
+                                                        }}
+                                                    >
+                                                        {item}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
 
-                            <div className="d-flex align-items-center my-4">
-                                <div
-                                    className="flex-grow-1"
-                                    style={{ height: "1px", backgroundColor: colors.border }}
-                                />
-                                <span className="px-3 small" style={{ color: colors.muted }}>
-                                    or
-                                </span>
-                                <div
-                                    className="flex-grow-1"
-                                    style={{ height: "1px", backgroundColor: colors.border }}
-                                />
-                            </div>
-
-                            <form onSubmit={handleSubmit}>
-                                <div className="mb-3">
-                                    <label htmlFor="email" style={labelStyle}>
-                                        Email
-                                    </label>
-                                    <input
-                                        type="email"
-                                        id="email"
-                                        placeholder="Enter your email address"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                        style={inputStyle}
-                                    />
-                                </div>
-
-                                <div className="mb-3">
-                                    <label htmlFor="password" style={labelStyle}>
-                                        Password
-                                    </label>
-                                    <input
-                                        type="password"
-                                        id="password"
-                                        placeholder="Enter your password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                        style={inputStyle}
-                                    />
-                                </div>
-
-                                {error && (
                                     <div
-                                        className="mb-3 px-3 py-2 rounded-3"
+                                        className="mt-5 p-4 rounded-4"
                                         style={{
-                                            backgroundColor: colors.errorBg,
-                                            color: colors.errorText,
-                                            fontSize: "0.95rem",
-                                            border: `1px solid ${colors.border}`,
+                                            backgroundColor: "rgba(255,255,255,0.08)",
+                                            border: "1px solid rgba(255,255,255,0.12)",
                                         }}
                                     >
-                                        {error}
+                                        <div className="fw-semibold mb-2">
+                                            Stay consistent every day
+                                        </div>
+                                        <p
+                                            className="mb-0"
+                                            style={{
+                                                color: "rgba(255,255,255,0.78)",
+                                                lineHeight: 1.7,
+                                                fontSize: "0.95rem",
+                                            }}
+                                        >
+                                            A focused workspace helps you reduce clutter, stay aware
+                                            of priorities, and keep your academic momentum strong.
+                                        </p>
                                     </div>
-                                )}
+                                </div>
+                            </div>
 
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="btn w-100 py-3 rounded-3"
-                                    style={{
-                                        backgroundColor: colors.primary,
-                                        color: colors.white,
-                                        border: `1px solid ${colors.primary}`,
-                                        fontWeight: 600,
-                                    }}
-                                >
-                                    {isLoading ? "Logging in..." : "Log in"}
-                                </button>
-                            </form>
+                            {/* RIGHT PANEL */}
+                            <div className="col-lg-7">
+                                <div className="p-4 p-md-5 p-xl-5">
+                                    <div className="text-center text-lg-start mb-4">
+                                        <div
+                                            className="d-inline-flex d-lg-none align-items-center justify-content-center rounded-4 mb-3"
+                                            style={{
+                                                width: "64px",
+                                                height: "64px",
+                                                backgroundColor: colors.primaryTint,
+                                                color: colors.primary,
+                                            }}
+                                        >
+                                            <NotebookTabs size={32} strokeWidth={2} />
+                                        </div>
 
-                            <p
-                                className="text-center mt-4 mb-0"
-                                style={{ color: colors.muted }}
-                            >
-                                Don&apos;t have an account?{" "}
-                                <Link
-                                    to="/register"
-                                    className="text-decoration-none fw-semibold"
-                                    style={{ color: colors.primary }}
-                                >
-                                    Sign up
-                                </Link>
-                            </p>
+                                        <h1
+                                            className="fw-bold mb-2"
+                                            style={{
+                                                color: colors.text,
+                                                fontSize: "2rem",
+                                                letterSpacing: "-0.02em",
+                                            }}
+                                        >
+                                            Log in to NoteBook
+                                        </h1>
+
+                                        <p className="mb-0" style={{ color: colors.muted }}>
+                                            Welcome back. Continue where you left off.
+                                        </p>
+                                    </div>
+
+                                    <div className="d-grid gap-3 mb-4">
+                                        <button
+                                            type="button"
+                                            onClick={handleGoogleLogin}
+                                            style={socialBtnStyle}
+                                        >
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                width="18"
+                                                height="18"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                                            </svg>
+                                            Continue with Google
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={handleGithubLogin}
+                                            style={socialBtnStyle}
+                                        >
+                                            <Github size={18} />
+                                            Continue with GitHub
+                                        </button>
+                                    </div>
+
+                                    <div className="d-flex align-items-center my-4">
+                                        <div
+                                            className="flex-grow-1"
+                                            style={{ height: "1px", backgroundColor: colors.border }}
+                                        />
+                                        <span className="px-3 small" style={{ color: colors.muted }}>
+                                            or sign in with email
+                                        </span>
+                                        <div
+                                            className="flex-grow-1"
+                                            style={{ height: "1px", backgroundColor: colors.border }}
+                                        />
+                                    </div>
+
+                                    <form onSubmit={handleSubmit}>
+                                        <div className="mb-3">
+                                            <label htmlFor="email" style={labelStyle}>
+                                                Email
+                                            </label>
+                                            <input
+                                                type="email"
+                                                id="email"
+                                                placeholder="Enter your email address"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                required
+                                                style={inputStyle}
+                                            />
+                                        </div>
+
+                                        <div className="mb-3">
+                                            <div className="d-flex justify-content-between align-items-center mb-2">
+                                                <label htmlFor="password" style={{ ...labelStyle, marginBottom: 0 }}>
+                                                    Password
+                                                </label>
+                                                <Link
+                                                    to="/forgot-password"
+                                                    className="text-decoration-none small fw-semibold"
+                                                    style={{ color: colors.primary }}
+                                                >
+                                                    Forgot password?
+                                                </Link>
+                                            </div>
+
+                                            <input
+                                                type="password"
+                                                id="password"
+                                                placeholder="Enter your password"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                required
+                                                style={inputStyle}
+                                            />
+                                        </div>
+
+                                        {error && (
+                                            <div
+                                                className="mb-3 px-3 py-3 rounded-3"
+                                                style={{
+                                                    backgroundColor: colors.errorBg,
+                                                    color: colors.errorText,
+                                                    fontSize: "0.95rem",
+                                                    border: `1px solid ${colors.border}`,
+                                                }}
+                                            >
+                                                {error}
+                                            </div>
+                                        )}
+
+                                        <button
+                                            type="submit"
+                                            disabled={isLoading}
+                                            className="btn w-100 py-3 rounded-3 d-inline-flex align-items-center justify-content-center gap-2"
+                                            style={{
+                                                backgroundColor: colors.primary,
+                                                color: colors.white,
+                                                border: `1px solid ${colors.primary}`,
+                                                fontWeight: 600,
+                                                boxShadow: "0 10px 24px rgba(15, 39, 68, 0.12)",
+                                            }}
+                                        >
+                                            {isLoading ? "Logging in..." : "Log in"}
+                                            {!isLoading && <ArrowRight size={18} />}
+                                        </button>
+                                    </form>
+
+                                    <p
+                                        className="text-center mt-4 mb-0"
+                                        style={{ color: colors.muted }}
+                                    >
+                                        Don&apos;t have an account?{" "}
+                                        <Link
+                                            to="/register"
+                                            className="text-decoration-none fw-semibold"
+                                            style={{ color: colors.primary }}
+                                        >
+                                            Sign up
+                                        </Link>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
