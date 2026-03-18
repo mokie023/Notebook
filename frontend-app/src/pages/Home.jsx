@@ -15,13 +15,14 @@ export default function Home() {
     const colors = {
         primary: "#0F2744",
         primarySoft: "#1E3A5F",
+        primaryDeep: "#0B1F36",
         primaryTint: "#EAF0F7",
-        background: "#F7F9FC",
+        background: "#F4F7FB",
         white: "#FFFFFF",
         text: "#0F172A",
         muted: "#475569",
         border: "#D9E2EC",
-        overlay: "rgba(247, 249, 252, 0.78)",
+        overlay: "rgba(9, 24, 43, 0.72)",
         success: "#16A34A",
     };
 
@@ -61,7 +62,7 @@ export default function Home() {
     const cardStyle = {
         backgroundColor: colors.white,
         border: `1px solid ${colors.border}`,
-        boxShadow: "0 10px 30px rgba(15, 39, 68, 0.06)",
+        boxShadow: "0 14px 34px rgba(15, 39, 68, 0.08)",
     };
 
     return (
@@ -78,24 +79,24 @@ export default function Home() {
             <nav
                 className="navbar navbar-expand-lg py-3 sticky-top"
                 style={{
-                    backgroundColor: "rgba(255,255,255,0.88)",
+                    backgroundColor: "rgba(10, 24, 43, 0.78)",
                     backdropFilter: "blur(10px)",
-                    borderBottom: `1px solid ${colors.border}`,
+                    borderBottom: "1px solid rgba(255,255,255,0.08)",
                 }}
             >
                 <div className="container">
                     <Link
                         to="/"
                         className="navbar-brand d-flex align-items-center gap-2 fw-semibold m-0 text-decoration-none"
-                        style={{ color: colors.primary, fontSize: "1.08rem" }}
+                        style={{ color: colors.white, fontSize: "1.08rem" }}
                     >
                         <div
                             className="d-flex align-items-center justify-content-center rounded-3"
                             style={{
-                                width: "38px",
-                                height: "38px",
-                                backgroundColor: colors.primaryTint,
-                                border: `1px solid ${colors.border}`,
+                                width: "40px",
+                                height: "40px",
+                                backgroundColor: "rgba(255,255,255,0.10)",
+                                border: "1px solid rgba(255,255,255,0.12)",
                             }}
                         >
                             <NotebookTabs size={20} strokeWidth={2} />
@@ -107,7 +108,7 @@ export default function Home() {
                         <Link
                             to="/login"
                             className="text-decoration-none fw-medium"
-                            style={{ color: colors.primary, fontSize: "0.95rem" }}
+                            style={{ color: "rgba(255,255,255,0.88)", fontSize: "0.95rem" }}
                         >
                             Log in
                         </Link>
@@ -116,11 +117,11 @@ export default function Home() {
                             to="/register"
                             className="btn btn-sm px-3 py-2 rounded-3"
                             style={{
-                                backgroundColor: colors.primary,
-                                color: colors.white,
-                                border: `1px solid ${colors.primary}`,
+                                backgroundColor: colors.white,
+                                color: colors.primary,
+                                border: "1px solid rgba(255,255,255,0.2)",
                                 fontWeight: 600,
-                                boxShadow: "0 8px 20px rgba(15, 39, 68, 0.14)",
+                                boxShadow: "0 10px 24px rgba(0, 0, 0, 0.15)",
                             }}
                         >
                             Get Started
@@ -133,7 +134,7 @@ export default function Home() {
             <section
                 className="d-flex align-items-center position-relative overflow-hidden"
                 style={{
-                    minHeight: "88vh",
+                    minHeight: "92vh",
                     backgroundImage: `
                         linear-gradient(${colors.overlay}, ${colors.overlay}),
                         url("/bg.jpg")
@@ -149,12 +150,12 @@ export default function Home() {
                             <div
                                 className="d-inline-flex align-items-center gap-2 px-3 py-2 mb-4 rounded-pill"
                                 style={{
-                                    border: `1px solid ${colors.border}`,
-                                    color: colors.primary,
+                                    border: "1px solid rgba(255,255,255,0.16)",
+                                    color: colors.white,
                                     fontSize: "0.9rem",
-                                    backgroundColor: "rgba(255,255,255,0.84)",
-                                    backdropFilter: "blur(6px)",
-                                    boxShadow: "0 6px 20px rgba(15, 39, 68, 0.05)",
+                                    backgroundColor: "rgba(255,255,255,0.08)",
+                                    backdropFilter: "blur(8px)",
+                                    boxShadow: "0 8px 22px rgba(0,0,0,0.10)",
                                 }}
                             >
                                 <Sparkles size={16} strokeWidth={1.8} />
@@ -164,11 +165,11 @@ export default function Home() {
                             <h1
                                 className="fw-bold mb-3 mx-auto"
                                 style={{
-                                    fontSize: "clamp(2.8rem, 6vw, 5.3rem)",
+                                    fontSize: "clamp(2.8rem, 6vw, 5.4rem)",
                                     lineHeight: 1,
                                     letterSpacing: "-0.04em",
-                                    color: colors.text,
-                                    maxWidth: "920px",
+                                    color: colors.white,
+                                    maxWidth: "940px",
                                 }}
                             >
                                 Study, plan, and think clearly in one modern workspace.
@@ -180,7 +181,7 @@ export default function Home() {
                                     maxWidth: "760px",
                                     fontSize: "1.1rem",
                                     lineHeight: 1.85,
-                                    color: colors.muted,
+                                    color: "rgba(255,255,255,0.82)",
                                 }}
                             >
                                 NoteBook helps students organize notes, manage tasks, and build
@@ -193,13 +194,13 @@ export default function Home() {
                                     to="/register"
                                     className="btn px-4 px-md-5 py-3 rounded-3 d-inline-flex align-items-center gap-2"
                                     style={{
-                                        backgroundColor: colors.primary,
-                                        color: colors.white,
-                                        border: `1px solid ${colors.primary}`,
+                                        backgroundColor: colors.white,
+                                        color: colors.primary,
+                                        border: "1px solid rgba(255,255,255,0.18)",
                                         fontWeight: 600,
                                         minWidth: "210px",
                                         justifyContent: "center",
-                                        boxShadow: "0 10px 24px rgba(15, 39, 68, 0.16)",
+                                        boxShadow: "0 14px 30px rgba(0, 0, 0, 0.16)",
                                     }}
                                 >
                                     Start for free
@@ -210,12 +211,12 @@ export default function Home() {
                                     to="/login"
                                     className="btn px-4 px-md-5 py-3 rounded-3"
                                     style={{
-                                        backgroundColor: "rgba(255,255,255,0.88)",
-                                        color: colors.primary,
-                                        border: `1px solid ${colors.border}`,
+                                        backgroundColor: "rgba(255,255,255,0.08)",
+                                        color: colors.white,
+                                        border: "1px solid rgba(255,255,255,0.16)",
                                         fontWeight: 600,
                                         minWidth: "170px",
-                                        boxShadow: "0 8px 20px rgba(15, 39, 68, 0.05)",
+                                        backdropFilter: "blur(8px)",
                                     }}
                                 >
                                     Log in
@@ -228,16 +229,16 @@ export default function Home() {
                                         <div
                                             className="rounded-4 px-4 py-3 h-100"
                                             style={{
-                                                backgroundColor: "rgba(255,255,255,0.82)",
-                                                border: `1px solid ${colors.border}`,
-                                                backdropFilter: "blur(6px)",
-                                                boxShadow: "0 8px 22px rgba(15, 39, 68, 0.05)",
+                                                backgroundColor: "rgba(255,255,255,0.10)",
+                                                border: "1px solid rgba(255,255,255,0.14)",
+                                                backdropFilter: "blur(10px)",
+                                                boxShadow: "0 10px 24px rgba(0, 0, 0, 0.10)",
                                             }}
                                         >
                                             <div
                                                 className="fw-bold"
                                                 style={{
-                                                    color: colors.primary,
+                                                    color: colors.white,
                                                     fontSize: "1.2rem",
                                                 }}
                                             >
@@ -245,7 +246,7 @@ export default function Home() {
                                             </div>
                                             <div
                                                 style={{
-                                                    color: colors.muted,
+                                                    color: "rgba(255,255,255,0.72)",
                                                     fontSize: "0.92rem",
                                                 }}
                                             >
@@ -261,7 +262,7 @@ export default function Home() {
             </section>
 
             {/* FEATURES */}
-            <section className="py-5 py-lg-6">
+            <section className="py-5 py-lg-6" style={{ backgroundColor: colors.background }}>
                 <div className="container">
                     <div className="text-center mb-5">
                         <h2
@@ -286,10 +287,7 @@ export default function Home() {
                     <div className="row g-4">
                         {features.map((feature, index) => (
                             <div className="col-md-4" key={index}>
-                                <div
-                                    className="h-100 p-4 rounded-4"
-                                    style={cardStyle}
-                                >
+                                <div className="h-100 p-4 rounded-4" style={cardStyle}>
                                     <div
                                         className="d-inline-flex align-items-center justify-content-center rounded-3 mb-3"
                                         style={{
@@ -331,7 +329,12 @@ export default function Home() {
             </section>
 
             {/* CLARITY SECTION */}
-            <section className="py-5 py-lg-6" style={{ backgroundColor: colors.white }}>
+            <section
+                className="py-5 py-lg-6"
+                style={{
+                    background: "linear-gradient(180deg, #ffffff 0%, #f4f8fc 100%)",
+                }}
+            >
                 <div className="container">
                     <div className="row align-items-center g-5">
                         <div className="col-lg-6">
@@ -350,7 +353,11 @@ export default function Home() {
 
                             <h2
                                 className="fw-bold mb-3"
-                                style={{ fontSize: "2.3rem", color: colors.text, lineHeight: 1.15 }}
+                                style={{
+                                    fontSize: "2.3rem",
+                                    color: colors.text,
+                                    lineHeight: 1.15,
+                                }}
                             >
                                 A calm interface that helps you do better work.
                             </h2>
@@ -389,6 +396,7 @@ export default function Home() {
                                         color: colors.white,
                                         border: `1px solid ${colors.primary}`,
                                         fontWeight: 600,
+                                        boxShadow: "0 10px 24px rgba(15, 39, 68, 0.12)",
                                     }}
                                 >
                                     Create your workspace
@@ -499,14 +507,14 @@ export default function Home() {
             </section>
 
             {/* CTA */}
-            <section className="py-5">
+            <section className="py-5 py-lg-6">
                 <div className="container">
                     <div
                         className="rounded-4 p-4 p-md-5 text-center"
                         style={{
-                            backgroundColor: colors.primary,
+                            background: "linear-gradient(160deg, #102A4A 0%, #183B63 55%, #224C78 100%)",
                             color: colors.white,
-                            boxShadow: "0 18px 40px rgba(15, 39, 68, 0.14)",
+                            boxShadow: "0 20px 46px rgba(15, 39, 68, 0.18)",
                         }}
                     >
                         <h2 className="fw-bold mb-3" style={{ fontSize: "2rem" }}>
@@ -543,7 +551,7 @@ export default function Home() {
                                 style={{
                                     backgroundColor: "transparent",
                                     color: colors.white,
-                                    border: "1px solid rgba(255,255,255,0.35)",
+                                    border: "1px solid rgba(118, 48, 239, 0.35)",
                                 }}
                             >
                                 Log in
