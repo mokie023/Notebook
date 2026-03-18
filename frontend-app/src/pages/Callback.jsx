@@ -6,22 +6,28 @@ export default function Callback() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Grab the token or error from the URL
         const token = searchParams.get("token");
         const error = searchParams.get("error");
 
         if (token) {
-            // Save token and go to home/dashboard
             localStorage.setItem("auth_token", token);
-            navigate("/");
+            navigate("/dashboard");
         } else if (error) {
-            // If something went wrong, send them back to login
+            navigate("/login");
+        } else {
             navigate("/login");
         }
     }, [searchParams, navigate]);
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div
+            style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100vh",
+            }}
+        >
             <h2>Authenticating...</h2>
         </div>
     );
