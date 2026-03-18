@@ -27,7 +27,7 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false); //adding an error message state to display any error messages from the server
 
     const navigate = useNavigate();
 
@@ -41,26 +41,51 @@ export default function Login() {
         window.location.href = `${API_BASE_URL}/auth/github/redirect`;
     };
 
+    /*
+    Handle submit
+    redirects to the dashboard if successful, otherwise displays an error message
+    stores the token in local storage for future authenticated requests
+    shows a success message on successful login
+    handles laravel validation errors and other server errors gracefully
+    */
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setMessage("");
         setIsLoading(true);
 
         try {
             const response = await api.post("/auth/login", { email, password });
+
             const token = response.data.data?.token || response.data.token;
+            const user = response.data.data?.user || response.data.user;
 
             if (token) {
                 localStorage.setItem("auth_token", token);
-                navigate("/");
+
+                if (user) {
+                    localStorage.setItem("user", JSON.stringify(user));
+                }
+
+                setMessage("Login successful. Redirecting to your dashboard...");
+
+                setTimeout(() => {
+                    navigate("/dashboard");
+                }, 1000);
             } else {
-                setError("No token received from server.");
+                setError("Login succeeded, but no token was received from the server.");
             }
         } catch (err) {
-            setError(
-                err.response?.data?.message ||
-                "Failed to log in. Please check your credentials."
-            );
+            if (err.response?.data?.errors) {
+                const firstError = Object.values(err.response.data.errors)[0][0];
+                setError(firstError);
+            } else {
+                setError(
+                    err.response?.data?.message ||
+                    "Failed to log in. Please check your credentials."
+                );
+            }
         } finally {
             setIsLoading(false);
         }
