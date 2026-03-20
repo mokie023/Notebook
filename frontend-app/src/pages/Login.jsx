@@ -21,33 +21,36 @@ export default function Login() {
         border: "#D9E2EC",
         errorBg: "#FEF3F2",
         errorText: "#B42318",
+        successBg: "#ECFDF3",
+        successText: "#027A48",
     };
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
-    const [isLoading, setIsLoading] = useState(false); //adding an error message state to display any error messages from the server
+    const [isLoading, setIsLoading] = useState(false);
 
     const navigate = useNavigate();
 
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+    const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
 
     const handleGoogleLogin = () => {
+        if (!API_BASE_URL) {
+            setError("OAuth configuration is missing.");
+            return;
+        }
         window.location.href = `${API_BASE_URL}/auth/google/redirect`;
     };
 
     const handleGithubLogin = () => {
+        if (!API_BASE_URL) {
+            setError("OAuth configuration is missing.");
+            return;
+        }
         window.location.href = `${API_BASE_URL}/auth/github/redirect`;
     };
-
-    /*
-    Handle submit
-    redirects to the dashboard if successful, otherwise displays an error message
-    stores the token in local storage for future authenticated requests
-    shows a success message on successful login
-    handles laravel validation errors and other server errors gracefully
-    */
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -58,8 +61,8 @@ export default function Login() {
         try {
             const response = await api.post("/auth/login", { email, password });
 
-            const token = response.data.data?.token || response.data.token;
-            const user = response.data.data?.user || response.data.user;
+            const token = response.data?.data?.token || response.data?.token;
+            const user = response.data?.data?.user || response.data?.user;
 
             if (token) {
                 localStorage.setItem("auth_token", token);
@@ -78,8 +81,8 @@ export default function Login() {
             }
         } catch (err) {
             if (err.response?.data?.errors) {
-                const firstError = Object.values(err.response.data.errors)[0][0];
-                setError(firstError);
+                const firstError = Object.values(err.response.data.errors)[0]?.[0];
+                setError(firstError || "Validation failed.");
             } else {
                 setError(
                     err.response?.data?.message ||
@@ -124,6 +127,7 @@ export default function Login() {
         justifyContent: "center",
         gap: "10px",
         transition: "all 0.2s ease",
+        cursor: "pointer",
     };
 
     const benefits = [
@@ -152,11 +156,11 @@ export default function Login() {
                                 boxShadow: "0 24px 60px rgba(0, 0, 0, 0.18)",
                             }}
                         >
-                            {/* LEFT PANEL */}
                             <div
                                 className="col-lg-5 d-none d-lg-flex"
                                 style={{
-                                    background: "linear-gradient(160deg, #102A4A 0%, #183B63 55%, #224C78 100%)",
+                                    background:
+                                        "linear-gradient(160deg, #102A4A 0%, #183B63 55%, #224C78 100%)",
                                     color: colors.white,
                                 }}
                             >
@@ -268,7 +272,6 @@ export default function Login() {
                                 </div>
                             </div>
 
-                            {/* RIGHT PANEL */}
                             <div className="col-lg-7">
                                 <div className="p-4 p-md-5 p-xl-5">
                                     <div className="text-center text-lg-start mb-4">
@@ -362,16 +365,12 @@ export default function Login() {
 
                                         <div className="mb-3">
                                             <div className="d-flex justify-content-between align-items-center mb-2">
-                                                <label htmlFor="password" style={{ ...labelStyle, marginBottom: 0 }}>
+                                                <label
+                                                    htmlFor="password"
+                                                    style={{ ...labelStyle, marginBottom: 0 }}
+                                                >
                                                     Password
                                                 </label>
-                                                <Link
-                                                    to="/forgot-password"
-                                                    className="text-decoration-none small fw-semibold"
-                                                    style={{ color: colors.primary }}
-                                                >
-                                                    Forgot password?
-                                                </Link>
                                             </div>
 
                                             <input
@@ -385,13 +384,12 @@ export default function Login() {
                                             />
                                         </div>
 
-                                        // Display success message if login is successful
                                         {message && (
                                             <div
                                                 className="mb-3 px-3 py-3 rounded-3"
                                                 style={{
-                                                    backgroundColor: "#ECFDF3",
-                                                    color: "#027A48",
+                                                    backgroundColor: colors.successBg,
+                                                    color: colors.successText,
                                                     fontSize: "0.95rem",
                                                     border: `1px solid ${colors.border}`,
                                                 }}
@@ -414,9 +412,6 @@ export default function Login() {
                                             </div>
                                         )}
 
-
-
-
                                         <button
                                             type="submit"
                                             disabled={isLoading}
@@ -427,6 +422,8 @@ export default function Login() {
                                                 border: `1px solid ${colors.primary}`,
                                                 fontWeight: 600,
                                                 boxShadow: "0 10px 24px rgba(15, 39, 68, 0.12)",
+                                                opacity: isLoading ? 0.85 : 1,
+                                                cursor: isLoading ? "not-allowed" : "pointer",
                                             }}
                                         >
                                             {isLoading ? "Logging in..." : "Log in"}

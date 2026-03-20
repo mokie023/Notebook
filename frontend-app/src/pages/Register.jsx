@@ -34,26 +34,36 @@ export default function Register() {
 
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
-    const [isLoading, setIsLoading] = useState(false);  // to track loading state during form submission
+    const [isLoading, setIsLoading] = useState(false);
 
     const navigate = useNavigate();
 
+    const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+
     const handleGoogleLogin = () => {
-        window.location.href = "http://localhost:8000/api/v1/auth/google/redirect";
+        if (!API_BASE_URL) {
+            setError("OAuth configuration is missing.");
+            return;
+        }
+        window.location.href = `${API_BASE_URL}/auth/google/redirect`;
     };
 
     const handleGithubLogin = () => {
-        window.location.href = "http://localhost:8000/api/v1/auth/github/redirect";
+        if (!API_BASE_URL) {
+            setError("OAuth configuration is missing.");
+            return;
+        }
+        window.location.href = `${API_BASE_URL}/auth/github/redirect`;
     };
 
     function handleChange(e) {
-        setForm({
-            ...form,
+        setForm((prev) => ({
+            ...prev,
             [e.target.name]: e.target.value,
-        });
+        }));
     }
 
-    // Handle form submission
     async function handleSubmit(e) {
         e.preventDefault();
         setMessage("");
@@ -69,8 +79,8 @@ export default function Register() {
         try {
             const response = await api.post("/auth/register", form);
 
-            const token = response.data.data?.token || response.data.token;
-            const user = response.data.data?.user || response.data.user;
+            const token = response.data?.data?.token || response.data?.token;
+            const user = response.data?.data?.user || response.data?.user;
 
             if (token) {
                 localStorage.setItem("auth_token", token);
@@ -93,8 +103,8 @@ export default function Register() {
             }
         } catch (err) {
             if (err.response?.data?.errors) {
-                const firstError = Object.values(err.response.data.errors)[0][0];
-                setError(firstError);
+                const firstError = Object.values(err.response.data.errors)[0]?.[0];
+                setError(firstError || "Registration failed.");
             } else {
                 setError(
                     err.response?.data?.message ||
@@ -139,6 +149,7 @@ export default function Register() {
         justifyContent: "center",
         gap: "10px",
         transition: "all 0.2s ease",
+        cursor: "pointer",
     };
 
     const benefits = [
@@ -151,7 +162,7 @@ export default function Register() {
         <div
             className="min-vh-100 d-flex align-items-center py-4 py-lg-5"
             style={{
-                background: "linear-gradient(180deg, #F7F9FC 0%, #EEF4FA 100%)",
+                background: "linear-gradient(180deg, #0F2744 0%, #183B63 55%, #244A73 100%)",
                 fontFamily:
                     'Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
             }}
@@ -164,15 +175,14 @@ export default function Register() {
                             style={{
                                 backgroundColor: colors.white,
                                 border: `1px solid ${colors.border}`,
-                                boxShadow: "0 20px 50px rgba(15, 39, 68, 0.08)",
+                                boxShadow: "0 24px 60px rgba(0, 0, 0, 0.18)",
                             }}
                         >
-                            {/* LEFT PANEL */}
                             <div
                                 className="col-lg-5 d-none d-lg-flex"
                                 style={{
                                     background:
-                                        "linear-gradient(160deg, #0F2744 0%, #183B63 100%)",
+                                        "linear-gradient(160deg, #102A4A 0%, #183B63 55%, #224C78 100%)",
                                     color: colors.white,
                                 }}
                             >
@@ -284,7 +294,6 @@ export default function Register() {
                                 </div>
                             </div>
 
-                            {/* RIGHT PANEL */}
                             <div className="col-lg-7">
                                 <div className="p-4 p-md-5 p-xl-5">
                                     <div className="text-center text-lg-start mb-4">
@@ -491,6 +500,8 @@ export default function Register() {
                                                 fontWeight: 600,
                                                 boxShadow:
                                                     "0 10px 24px rgba(15, 39, 68, 0.12)",
+                                                opacity: isLoading ? 0.85 : 1,
+                                                cursor: isLoading ? "not-allowed" : "pointer",
                                             }}
                                         >
                                             {isLoading ? "Creating account..." : "Create account"}
