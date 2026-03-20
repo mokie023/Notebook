@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AI\StudyAssistantController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\JournalController;
@@ -23,6 +24,9 @@ Route::prefix('v1')->group(function () {
             Route::post('logout', [AuthController::class, 'logout']);
         });
     });
+
+    // Temporary public AI route for testing
+    Route::post('ai/summarize', [StudyAssistantController::class, 'summarize']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('dashboard/summary', [DashboardController::class, 'summary']);

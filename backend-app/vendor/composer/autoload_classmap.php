@@ -6,15 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'App\\Http\\Controllers\\Api\\AuthController' => $baseDir . '/app/Http/Controllers/Api/AuthController.php',
     'App\\Http\\Controllers\\Api\\Concerns\\ApiResponse' => $baseDir . '/app/Http/Controllers/Api/Concerns/ApiResponse.php',
-    'App\\Http\\Controllers\\Api\\DashboardController' => $baseDir . '/app/Http/Controllers/Api/DashboardController.php',
-    'App\\Http\\Controllers\\Api\\JournalController' => $baseDir . '/app/Http/Controllers/Api/JournalController.php',
-    'App\\Http\\Controllers\\Api\\NoteCategoryController' => $baseDir . '/app/Http/Controllers/Api/NoteCategoryController.php',
-    'App\\Http\\Controllers\\Api\\NoteController' => $baseDir . '/app/Http/Controllers/Api/NoteController.php',
-    'App\\Http\\Controllers\\Api\\PomodoroSessionController' => $baseDir . '/app/Http/Controllers/Api/PomodoroSessionController.php',
-    'App\\Http\\Controllers\\Api\\TagController' => $baseDir . '/app/Http/Controllers/Api/TagController.php',
-    'App\\Http\\Controllers\\Api\\TaskController' => $baseDir . '/app/Http/Controllers/Api/TaskController.php',
     'App\\Http\\Controllers\\Controller' => $baseDir . '/app/Http/Controllers/Controller.php',
     'App\\Http\\Requests\\LoginRequest' => $baseDir . '/app/Http/Requests/LoginRequest.php',
     'App\\Http\\Requests\\RegisterRequest' => $baseDir . '/app/Http/Requests/RegisterRequest.php',
