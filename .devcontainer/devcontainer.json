@@ -1,0 +1,14 @@
+{
+  "name": "Notebook Laravel Dev",
+  "image": "mcr.microsoft.com/devcontainers/php:1-8.2-bullseye",
+  "forwardPorts": [8000],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bmewburn.vscode-intelephense-client",
+        "xdebug.php-debug",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}
