@@ -407,6 +407,23 @@ Planned enhancements:
 - Real-time updates
 - Notifications
 
+
+# Application Screenshots
+
+## Home Page
+<p align="center">
+  <img src="docs/screenshots/Home-page.png" width="800"/>
+</p>
+
+## Login Page
+<p align="center">
+  <img src="docs/screenshots/Login.png" width="500"/>
+</p>
+
+## Dashboard
+<p align="center">
+  <img src="docs/screenshots/Dashboard.png" width="800"/>
+</p>
 ---
 
 # License
