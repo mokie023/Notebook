@@ -10,6 +10,7 @@ use App\Models\Note;
 use App\Models\Tag;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class NoteController extends Controller
@@ -54,7 +55,16 @@ class NoteController extends Controller
 
     public function store(StoreNoteRequest $request): JsonResponse
     {
-        $payload = $request->safe()->except(['tag_ids', 'new_tags']);
+        $payload = $request->safe()->except(['tag_ids', 'new_tags', 'file']);
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $payload['file_path'] = $file->store('notes', 'public');
+            $payload['file_name'] = $file->getClientOriginalName();
+            $payload['file_type'] = $file->extension();
+            $payload['file_size'] = $file->getSize();
+        }
+
         $note = $request->user()->notes()->create($payload);
 
         $this->syncTags($note, $request);
@@ -73,7 +83,20 @@ class NoteController extends Controller
     {
         $this->abortIfNotOwner($note, $request);
 
-        $payload = $request->safe()->except(['tag_ids', 'new_tags']);
+        $payload = $request->safe()->except(['tag_ids', 'new_tags', 'file']);
+
+        if ($request->hasFile('file')) {
+            if ($note->file_path && Storage::disk('public')->exists($note->file_path)) {
+                Storage::disk('public')->delete($note->file_path);
+            }
+
+            $file = $request->file('file');
+            $payload['file_path'] = $file->store('notes', 'public');
+            $payload['file_name'] = $file->getClientOriginalName();
+            $payload['file_type'] = $file->extension();
+            $payload['file_size'] = $file->getSize();
+        }
+
         $note->update($payload);
 
         if ($request->has('tag_ids') || $request->has('new_tags')) {
@@ -86,6 +109,10 @@ class NoteController extends Controller
     public function destroy(Request $request, Note $note): JsonResponse
     {
         $this->abortIfNotOwner($note, $request);
+
+        if ($note->file_path && Storage::disk('public')->exists($note->file_path)) {
+            Storage::disk('public')->delete($note->file_path);
+        }
 
         $note->delete();
 
