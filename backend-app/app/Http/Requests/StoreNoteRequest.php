@@ -3,33 +3,28 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreNoteRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
-    public function rules(): array
+    public function rules()
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
-            'content' => ['required', 'string'],
-            'note_category_id' => [
-                'nullable',
-                'integer',
-                Rule::exists('note_categories', 'id')->where('user_id', $this->user()->id),
-            ],
-            'is_pinned' => ['sometimes', 'boolean'],
-            'tag_ids' => ['sometimes', 'array'],
-            'tag_ids.*' => [
-                'integer',
-                Rule::exists('tags', 'id')->where('user_id', $this->user()->id),
-            ],
-            'new_tags' => ['sometimes', 'array'],
-            'new_tags.*' => ['string', 'max:50'],
+            'content' => 'nullable|string',
+            'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if (!$this->input('content') && !$this->hasFile('file')) {
+                $validator->errors()->add('content', 'You must provide either content or a file.');
+            }
+        });
+    }
+
+    public function authorize()
+    {
+        return true;
     }
 }
