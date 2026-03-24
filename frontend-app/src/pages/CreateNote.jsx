@@ -10,6 +10,7 @@ export default function CreateNote() {
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({});
 
     const navigate = useNavigate();
 
@@ -32,6 +33,7 @@ export default function CreateNote() {
         e.preventDefault();
         setLoading(true);
         setError("");
+        setFieldErrors({});
 
         if (!title.trim()) {
             setError("Title is required.");
@@ -48,21 +50,39 @@ export default function CreateNote() {
         try {
             const formData = new FormData();
             formData.append("title", title.trim());
-            formData.append("content", content.trim());
+
+            if (content.trim()) {
+                formData.append("content", content.trim());
+            }
 
             if (file) {
                 formData.append("file", file);
             }
 
-            await api.post("/notes", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
+            const response = await api.post("/notes", formData);
 
+            console.log("Create note success:", response.data);
             navigate("/notes");
         } catch (err) {
-            setError("Failed to create note.");
+            console.error("Create note error:", err);
+            console.error("Response status:", err.response?.status);
+            console.error("Response data:", err.response?.data);
+
+            const response = err.response;
+
+            if (response?.status === 422) {
+                const backendErrors = response.data?.errors || {};
+                setFieldErrors(backendErrors);
+                setError(response.data?.message || "Validation failed.");
+            } else if (response?.status === 401) {
+                setError("You are not authenticated. Please log in again.");
+            } else if (response?.status === 403) {
+                setError("You are not allowed to perform this action.");
+            } else if (response?.status === 500) {
+                setError("Server error. Check Laravel logs.");
+            } else {
+                setError(response?.data?.message || err.message || "Failed to create note.");
+            }
         } finally {
             setLoading(false);
         }
@@ -115,12 +135,17 @@ export default function CreateNote() {
                                     </label>
                                     <input
                                         type="text"
-                                        className="form-control"
+                                        className={`form-control ${fieldErrors.title ? "is-invalid" : ""}`}
                                         placeholder="Enter note title"
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
                                         required
                                     />
+                                    {fieldErrors.title && (
+                                        <div className="invalid-feedback">
+                                            {fieldErrors.title[0]}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="mb-4">
@@ -128,12 +153,17 @@ export default function CreateNote() {
                                         Note Content
                                     </label>
                                     <textarea
-                                        className="form-control"
+                                        className={`form-control ${fieldErrors.content ? "is-invalid" : ""}`}
                                         rows="8"
                                         placeholder="Write your summary, explanation, or note here..."
                                         value={content}
                                         onChange={(e) => setContent(e.target.value)}
                                     />
+                                    {fieldErrors.content && (
+                                        <div className="invalid-feedback">
+                                            {fieldErrors.content[0]}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="mb-4">
@@ -142,10 +172,15 @@ export default function CreateNote() {
                                     </label>
                                     <input
                                         type="file"
-                                        className="form-control"
+                                        className={`form-control ${fieldErrors.file ? "is-invalid" : ""}`}
                                         accept=".pdf,.doc,.docx"
                                         onChange={(e) => setFile(e.target.files[0])}
                                     />
+                                    {fieldErrors.file && (
+                                        <div className="invalid-feedback">
+                                            {fieldErrors.file[0]}
+                                        </div>
+                                    )}
                                     <small style={{ color: colors.muted }}>
                                         Supported: PDF, DOC, DOCX
                                     </small>
