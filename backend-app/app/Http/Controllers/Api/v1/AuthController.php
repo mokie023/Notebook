@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -75,24 +76,25 @@ class AuthController extends Controller
         return $this->success(null, 'Logged out successfully');
     }
 
-    private function userData(User $user): array
-    {
-        return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'created_at' => $user->created_at,
-            'updated_at' => $user->updated_at,
-        ];
-    }
-
     public function redirect(string $provider)
     {
         if (! in_array($provider, ['google', 'github'])) {
             return $this->error('Invalid provider', 400);
         }
 
-        return Socialite::driver($provider)->stateless()->redirect();
+        try {
+            return Socialite::driver($provider)->stateless()->redirect();
+        } catch (\Throwable $e) {
+            Log::error('Social redirect failed', [
+                'provider' => $provider,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+
+            return redirect()->away($frontendUrl . '/login?error=SocialRedirectFailed');
+        }
     }
 
     public function callback(string $provider)
@@ -119,10 +121,27 @@ class AuthController extends Controller
             $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
 
             return redirect()->away($frontendUrl . '/auth/callback?token=' . $token);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error('Social callback failed', [
+                'provider' => $provider,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
 
             return redirect()->away($frontendUrl . '/login?error=SocialAuthFailed');
         }
+    }
+
+    private function userData(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'created_at' => $user->created_at,
+            'updated_at' => $user->updated_at,
+        ];
     }
 }
