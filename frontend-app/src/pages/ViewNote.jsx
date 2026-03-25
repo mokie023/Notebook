@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import api from "../api/axios";
 
 export default function ViewNote() {
@@ -8,16 +8,20 @@ export default function ViewNote() {
     const [note, setNote] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [downloading, setDownloading] = useState(false);
 
     useEffect(() => {
         async function fetchNote() {
             try {
+                setLoading(true);
+                setError("");
+
                 const res = await api.get(`/notes/${id}`);
-                setNote(res.data?.data || res.data || null);
+                const noteData = res.data.data || res.data;
+
+                setNote(noteData);
             } catch (err) {
                 console.error("Failed to load note:", err);
-                setError("Failed to load note.");
+                setError("Failed to load note. Please try again.");
             } finally {
                 setLoading(false);
             }
@@ -26,134 +30,58 @@ export default function ViewNote() {
         fetchNote();
     }, [id]);
 
-    const handleOpenDocument = async () => {
-        if (!note?.id) return;
-
-        try {
-            setDownloading(true);
-
-            const response = await api.get(`/notes/${note.id}/document`, {
-                responseType: "blob",
-            });
-
-            const blob = new Blob([response.data], {
-                type: note.file_type || "application/octet-stream",
-            });
-
-            const url = window.URL.createObjectURL(blob);
-
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = note.file_name || "document";
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-
-            window.URL.revokeObjectURL(url);
-        } catch (err) {
-            console.error("Failed to open document:", err);
-            alert("Failed to open document.");
-        } finally {
-            setDownloading(false);
-        }
-    };
-
     if (loading) {
-        return <p className="p-4">Loading...</p>;
+        return <p className="p-4">Loading note...</p>;
     }
 
     if (error) {
-        return (
-            <div className="p-4">
-                <div className="alert alert-danger">{error}</div>
-                <Link to="/notes" className="btn btn-outline-primary">
-                    Back to Notes
-                </Link>
-            </div>
-        );
+        return <p className="p-4 text-danger">{error}</p>;
     }
 
     if (!note) {
-        return (
-            <div className="p-4">
-                <p>Note not found</p>
-                <Link to="/notes" className="btn btn-outline-primary">
-                    Back to Notes
-                </Link>
-            </div>
-        );
-    }
-
-    const hasContent = !!note.content;
-    const hasFile = !!note.file_path;
-
-    let noteType = "Text Note";
-    if (hasContent && hasFile) {
-        noteType = "Hybrid Note";
-    } else if (hasFile) {
-        noteType = "Document Note";
+        return <p className="p-4">Note not found.</p>;
     }
 
     return (
         <div className="container py-4">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 className="mb-1">{note.title}</h2>
-                    <p className="text-muted mb-0">{noteType}</p>
-                </div>
-
-                <Link to="/notes" className="btn btn-outline-primary">
-                    Back to Notes
-                </Link>
-            </div>
-
-            {hasContent && (
-                <div className="card shadow-sm mb-4">
-                    <div className="card-body">
-                        <h5 className="card-title mb-3">Note Content</h5>
-                        <div style={{ whiteSpace: "pre-wrap", lineHeight: "1.7" }}>
-                            {note.content}
-                        </div>
+            <div className="card shadow-sm border-0">
+                <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h2 className="mb-0">{note.title || "Untitled Note"}</h2>
+                        <Link to="/notes" className="btn btn-outline-secondary btn-sm">
+                            Back to Notes
+                        </Link>
                     </div>
-                </div>
-            )}
 
-            {hasFile && (
-                <div className="card shadow-sm mb-4">
-                    <div className="card-body">
-                        <h5 className="card-title mb-3">Attached Document</h5>
+                    <hr />
 
-                        <p className="mb-2">
-                            <strong>File name:</strong> {note.file_name || "Unknown file"}
-                        </p>
+                    {note.content ? (
+                        <p style={{ whiteSpace: "pre-line" }}>{note.content}</p>
+                    ) : (
+                        <p className="text-muted">This note has no written content.</p>
+                    )}
 
-                        <p className="mb-2">
-                            <strong>File type:</strong> {note.file_type || "Unknown"}
-                        </p>
-
-                        {note.file_size && (
-                            <p className="mb-3">
-                                <strong>File size:</strong>{" "}
-                                {(note.file_size / 1024).toFixed(1)} KB
+                    {note.file_name && (
+                        <div className="mt-4">
+                            <h5>Attached File</h5>
+                            <p className="mb-1">
+                                <strong>File:</strong> {note.file_name}
                             </p>
-                        )}
 
-                        <button
-                            onClick={handleOpenDocument}
-                            disabled={downloading}
-                            className="btn btn-primary"
-                        >
-                            {downloading ? "Opening..." : "Open Document"}
-                        </button>
-                    </div>
+                            {note.file_path && (
+                                <a
+                                    href={note.file_path}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn btn-primary btn-sm"
+                                >
+                                    Open File
+                                </a>
+                            )}
+                        </div>
+                    )}
                 </div>
-            )}
-
-            {!hasContent && !hasFile && (
-                <div className="alert alert-warning">
-                    This note has no content or attached file.
-                </div>
-            )}
+            </div>
         </div>
     );
 }

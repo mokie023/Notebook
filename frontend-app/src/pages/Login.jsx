@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import {
@@ -33,23 +33,50 @@ export default function Login() {
 
     const navigate = useNavigate();
 
-    const API_BASE_URL =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+    /**
+     * Use the deployed API URL from Vite env first.
+     * Support both names temporarily in case one is already used elsewhere.
+     * Only use localhost while developing locally.
+     */
+    const apiBaseUrl = useMemo(() => {
+        const envUrl =
+            import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+
+        if (envUrl) {
+            return envUrl.replace(/\/+$/, "");
+        }
+
+        if (import.meta.env.DEV) {
+            return "http://localhost:8000/api/v1";
+        }
+
+        return "";
+    }, []);
 
     const handleGoogleLogin = () => {
-        if (!API_BASE_URL) {
-            setError("OAuth configuration is missing.");
+        setError("");
+
+        if (!apiBaseUrl) {
+            setError(
+                "OAuth configuration is missing. Please set VITE_API_URL in your deployed frontend environment."
+            );
             return;
         }
-        window.location.href = `${API_BASE_URL}/auth/google/redirect`;
+
+        window.location.href = `${apiBaseUrl}/auth/google/redirect`;
     };
 
     const handleGithubLogin = () => {
-        if (!API_BASE_URL) {
-            setError("OAuth configuration is missing.");
+        setError("");
+
+        if (!apiBaseUrl) {
+            setError(
+                "OAuth configuration is missing. Please set VITE_API_URL in your deployed frontend environment."
+            );
             return;
         }
-        window.location.href = `${API_BASE_URL}/auth/github/redirect`;
+
+        window.location.href = `${apiBaseUrl}/auth/github/redirect`;
     };
 
     const handleSubmit = async (e) => {
@@ -64,21 +91,22 @@ export default function Login() {
             const token = response.data?.data?.token || response.data?.token;
             const user = response.data?.data?.user || response.data?.user;
 
-            if (token) {
-                localStorage.setItem("auth_token", token);
-
-                if (user) {
-                    localStorage.setItem("user", JSON.stringify(user));
-                }
-
-                setMessage("Login successful. Redirecting to your dashboard...");
-
-                setTimeout(() => {
-                    navigate("/dashboard");
-                }, 1000);
-            } else {
+            if (!token) {
                 setError("Login succeeded, but no token was received from the server.");
+                return;
             }
+
+            localStorage.setItem("auth_token", token);
+
+            if (user) {
+                localStorage.setItem("user", JSON.stringify(user));
+            }
+
+            setMessage("Login successful. Redirecting to your dashboard...");
+
+            setTimeout(() => {
+                navigate("/dashboard");
+            }, 1000);
         } catch (err) {
             if (err.response?.data?.errors) {
                 const firstError = Object.values(err.response.data.errors)[0]?.[0];
