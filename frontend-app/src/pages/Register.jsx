@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import {
@@ -38,29 +38,53 @@ export default function Register() {
 
     const navigate = useNavigate();
 
-    const API_BASE_URL =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+    const apiBaseUrl = useMemo(() => {
+        const envUrl =
+            import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+
+        if (envUrl) {
+            return envUrl.replace(/\/+$/, "");
+        }
+
+        if (import.meta.env.DEV) {
+            return "http://localhost:8000/api/v1";
+        }
+
+        return "";
+    }, []);
 
     const handleGoogleLogin = () => {
-        if (!API_BASE_URL) {
-            setError("OAuth configuration is missing.");
+        setError("");
+
+        if (!apiBaseUrl) {
+            setError(
+                "OAuth configuration is missing. Please set VITE_API_URL in your frontend environment."
+            );
             return;
         }
-        window.location.href = `${API_BASE_URL}/auth/google/redirect`;
+
+        window.location.href = `${apiBaseUrl}/auth/google/redirect`;
     };
 
     const handleGithubLogin = () => {
-        if (!API_BASE_URL) {
-            setError("OAuth configuration is missing.");
+        setError("");
+
+        if (!apiBaseUrl) {
+            setError(
+                "OAuth configuration is missing. Please set VITE_API_URL in your frontend environment."
+            );
             return;
         }
-        window.location.href = `${API_BASE_URL}/auth/github/redirect`;
+
+        window.location.href = `${apiBaseUrl}/auth/github/redirect`;
     };
 
     function handleChange(e) {
+        const { name, value } = e.target;
+
         setForm((prev) => ({
             ...prev,
-            [e.target.name]: e.target.value,
+            [name]: value,
         }));
     }
 
@@ -89,7 +113,9 @@ export default function Register() {
                     localStorage.setItem("user", JSON.stringify(user));
                 }
 
-                setMessage("Account created successfully. Redirecting to your dashboard...");
+                setMessage(
+                    "Account created successfully. Redirecting to your dashboard..."
+                );
 
                 setTimeout(() => {
                     navigate("/dashboard");
@@ -162,7 +188,8 @@ export default function Register() {
         <div
             className="min-vh-100 d-flex align-items-center py-4 py-lg-5"
             style={{
-                background: "linear-gradient(180deg, #0F2744 0%, #183B63 55%, #244A73 100%)",
+                background:
+                    "linear-gradient(180deg, #0F2744 0%, #183B63 55%, #244A73 100%)",
                 fontFamily:
                     'Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
             }}
@@ -198,8 +225,10 @@ export default function Register() {
                                                 style={{
                                                     width: "42px",
                                                     height: "42px",
-                                                    backgroundColor: "rgba(255,255,255,0.12)",
-                                                    border: "1px solid rgba(255,255,255,0.18)",
+                                                    backgroundColor:
+                                                        "rgba(255,255,255,0.12)",
+                                                    border:
+                                                        "1px solid rgba(255,255,255,0.18)",
                                                 }}
                                             >
                                                 <NotebookTabs size={20} />
@@ -210,8 +239,10 @@ export default function Register() {
                                         <div
                                             className="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill mb-4"
                                             style={{
-                                                backgroundColor: "rgba(255,255,255,0.10)",
-                                                border: "1px solid rgba(255,255,255,0.15)",
+                                                backgroundColor:
+                                                    "rgba(255,255,255,0.10)",
+                                                border:
+                                                    "1px solid rgba(255,255,255,0.15)",
                                                 fontSize: "0.9rem",
                                             }}
                                         >
@@ -258,7 +289,8 @@ export default function Register() {
                                                     />
                                                     <span
                                                         style={{
-                                                            color: "rgba(255,255,255,0.88)",
+                                                            color:
+                                                                "rgba(255,255,255,0.88)",
                                                             lineHeight: 1.6,
                                                         }}
                                                     >
@@ -272,8 +304,10 @@ export default function Register() {
                                     <div
                                         className="mt-5 p-4 rounded-4"
                                         style={{
-                                            backgroundColor: "rgba(255,255,255,0.08)",
-                                            border: "1px solid rgba(255,255,255,0.12)",
+                                            backgroundColor:
+                                                "rgba(255,255,255,0.08)",
+                                            border:
+                                                "1px solid rgba(255,255,255,0.12)",
                                         }}
                                     >
                                         <div className="fw-semibold mb-2">
