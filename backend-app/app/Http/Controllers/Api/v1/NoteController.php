@@ -10,6 +10,7 @@ use App\Models\Note;
 use App\Models\Tag;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class NoteController extends Controller
@@ -20,15 +21,19 @@ class NoteController extends Controller
     {
         $query = Note::query()
             ->where('user_id', $request->user()->id)
-            ->with(['category:id,name,color', 'tags:id,name,slug'])
+            ->with([
+                'category:id,name,color',
+                'tags:id,name,slug',
+            ])
             ->latest();
 
         if ($request->filled('search')) {
-            $search = $request->string('search')->toString();
+            $search = trim($request->string('search')->toString());
+
             $query->where(function ($nested) use ($search) {
-                $nested
-                    ->where('title', 'like', "%{$search}%")
-                    ->orWhere('content', 'like', "%{$search}%");
+                $nested->where('title', 'like', "%{$search}%")
+                    ->orWhere('content', 'like', "%{$search}%")
+                    ->orWhere('file_name', 'like', "%{$search}%");
             });
         }
 
@@ -37,9 +42,11 @@ class NoteController extends Controller
         }
 
         if ($request->filled('tag')) {
-            $tag = $request->string('tag')->toString();
+            $tag = trim($request->string('tag')->toString());
+
             $query->whereHas('tags', function ($nested) use ($tag) {
-                $nested->where('slug', $tag)->orWhere('name', $tag);
+                $nested->where('slug', $tag)
+                    ->orWhere('name', $tag);
             });
         }
 
@@ -49,24 +56,35 @@ class NoteController extends Controller
 
         $perPage = max(1, min(100, $request->integer('per_page', 10)));
 
-        return $this->success($query->paginate($perPage)->withQueryString(), 'Notes fetched');
+        return $this->success(
+            $query->paginate($perPage)->withQueryString(),
+            'Notes fetched'
+        );
     }
 
     public function store(StoreNoteRequest $request): JsonResponse
     {
         $payload = $request->safe()->except(['tag_ids', 'new_tags']);
+
         $note = $request->user()->notes()->create($payload);
 
         $this->syncTags($note, $request);
 
-        return $this->success($note->load(['category', 'tags']), 'Note created', 201);
+        return $this->success(
+            $note->load(['category', 'tags']),
+            'Note created',
+            201
+        );
     }
 
     public function show(Request $request, Note $note): JsonResponse
     {
         $this->abortIfNotOwner($note, $request);
 
-        return $this->success($note->load(['category', 'tags']), 'Note fetched');
+        return $this->success(
+            $note->load(['category', 'tags']),
+            'Note fetched'
+        );
     }
 
     public function update(UpdateNoteRequest $request, Note $note): JsonResponse
@@ -74,13 +92,17 @@ class NoteController extends Controller
         $this->abortIfNotOwner($note, $request);
 
         $payload = $request->safe()->except(['tag_ids', 'new_tags']);
+
         $note->update($payload);
 
         if ($request->has('tag_ids') || $request->has('new_tags')) {
             $this->syncTags($note, $request);
         }
 
-        return $this->success($note->load(['category', 'tags']), 'Note updated');
+        return $this->success(
+            $note->load(['category', 'tags']),
+            'Note updated'
+        );
     }
 
     public function destroy(Request $request, Note $note): JsonResponse
@@ -101,20 +123,43 @@ class NoteController extends Controller
     {
         $userId = $request->user()->id;
 
-        $existingTagIds = collect($request->input('tag_ids', []));
+        $existingTagIds = $this->getValidExistingTagIds($request, $userId);
+        $createdTagIds = $this->createNewTags($request, $userId);
 
-        $createdTagIds = collect($request->input('new_tags', []))
+        $note->tags()->sync(
+            $existingTagIds->merge($createdTagIds)->unique()->values()->all()
+        );
+    }
+
+    private function getValidExistingTagIds(Request $request, int $userId): Collection
+    {
+        return Tag::query()
+            ->where('user_id', $userId)
+            ->whereIn('id', (array) $request->input('tag_ids', []))
+            ->pluck('id');
+    }
+
+    private function createNewTags(Request $request, int $userId): Collection
+    {
+        return collect($request->input('new_tags', []))
             ->filter(fn($name) => is_string($name) && trim($name) !== '')
             ->map(function (string $name) use ($userId) {
                 $normalized = trim($name);
                 $slug = Str::slug(Str::lower($normalized));
 
+                if ($slug === '') {
+                    $slug = Str::lower(Str::random(8));
+                }
+
                 return Tag::firstOrCreate(
-                    ['user_id' => $userId, 'slug' => $slug],
-                    ['name' => $normalized]
+                    [
+                        'user_id' => $userId,
+                        'slug' => $slug,
+                    ],
+                    [
+                        'name' => $normalized,
+                    ]
                 )->id;
             });
-
-        $note->tags()->sync($existingTagIds->merge($createdTagIds)->unique()->values());
     }
 }
