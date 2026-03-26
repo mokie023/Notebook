@@ -40,9 +40,10 @@ export default function Register() {
 
     const apiBaseUrl = useMemo(() => {
         const envUrl =
-            import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+            import.meta.env.VITE_API_URL ||
+            import.meta.env.VITE_API_BASE_URL;
 
-        if (envUrl) {
+        if (envUrl && envUrl.trim() !== "") {
             return envUrl.replace(/\/+$/, "");
         }
 
@@ -53,55 +54,84 @@ export default function Register() {
         return "";
     }, []);
 
+    const oauthAvailable = Boolean(apiBaseUrl);
+
     const handleGoogleLogin = () => {
         setError("");
+        setMessage("");
 
-        if (!apiBaseUrl) {
+        if (!oauthAvailable) {
             setError(
-                "OAuth configuration is missing. Please set VITE_API_URL in your frontend environment."
+                "OAuth is not configured. Please set VITE_API_URL in your frontend environment."
             );
             return;
         }
 
-        window.location.href = `${apiBaseUrl}/auth/google/redirect`;
+        window.location.assign(`${apiBaseUrl}/auth/google/redirect`);
     };
 
     const handleGithubLogin = () => {
         setError("");
+        setMessage("");
 
-        if (!apiBaseUrl) {
+        if (!oauthAvailable) {
             setError(
-                "OAuth configuration is missing. Please set VITE_API_URL in your frontend environment."
+                "OAuth is not configured. Please set VITE_API_URL in your frontend environment."
             );
             return;
         }
 
-        window.location.href = `${apiBaseUrl}/auth/github/redirect`;
+        window.location.assign(`${apiBaseUrl}/auth/github/redirect`);
     };
 
-    function handleChange(e) {
+    const handleChange = (e) => {
         const { name, value } = e.target;
 
         setForm((prev) => ({
             ...prev,
             [name]: value,
         }));
-    }
+    };
 
-    async function handleSubmit(e) {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setMessage("");
         setError("");
         setIsLoading(true);
 
-        if (form.password !== form.password_confirmation) {
+        const payload = {
+            name: form.name.trim(),
+            email: form.email.trim(),
+            password: form.password,
+            password_confirmation: form.password_confirmation,
+        };
+
+        if (!payload.name) {
+            setError("Name is required.");
+            setIsLoading(false);
+            return;
+        }
+
+        if (!payload.email) {
+            setError("Email is required.");
+            setIsLoading(false);
+            return;
+        }
+
+        if (payload.password.length < 6) {
+            setError("Password must be at least 6 characters.");
+            setIsLoading(false);
+            return;
+        }
+
+        if (payload.password !== payload.password_confirmation) {
             setError("Passwords do not match.");
             setIsLoading(false);
             return;
         }
 
         try {
-            const response = await api.post("/auth/register", form);
+            const response = await api.post("/auth/register", payload);
 
             const token = response.data?.data?.token || response.data?.token;
             const user = response.data?.data?.user || response.data?.user;
@@ -128,19 +158,19 @@ export default function Register() {
                 }, 1200);
             }
         } catch (err) {
-            if (err.response?.data?.errors) {
-                const firstError = Object.values(err.response.data.errors)[0]?.[0];
-                setError(firstError || "Registration failed.");
-            } else {
-                setError(
-                    err.response?.data?.message ||
-                    "Registration failed. Please try again."
-                );
-            }
+            const firstValidationError = err.response?.data?.errors
+                ? Object.values(err.response.data.errors)[0]?.[0]
+                : null;
+
+            setError(
+                firstValidationError ||
+                err.response?.data?.message ||
+                "Registration failed. Please try again."
+            );
         } finally {
             setIsLoading(false);
         }
-    }
+    };
 
     const inputStyle = {
         width: "100%",
@@ -176,6 +206,12 @@ export default function Register() {
         gap: "10px",
         transition: "all 0.2s ease",
         cursor: "pointer",
+    };
+
+    const disabledSocialBtnStyle = {
+        ...socialBtnStyle,
+        opacity: 0.6,
+        cursor: "not-allowed",
     };
 
     const benefits = [
@@ -363,7 +399,12 @@ export default function Register() {
                                         <button
                                             type="button"
                                             onClick={handleGoogleLogin}
-                                            style={socialBtnStyle}
+                                            disabled={!oauthAvailable}
+                                            style={
+                                                oauthAvailable
+                                                    ? socialBtnStyle
+                                                    : disabledSocialBtnStyle
+                                            }
                                         >
                                             <svg
                                                 viewBox="0 0 24 24"
@@ -394,7 +435,12 @@ export default function Register() {
                                         <button
                                             type="button"
                                             onClick={handleGithubLogin}
-                                            style={socialBtnStyle}
+                                            disabled={!oauthAvailable}
+                                            style={
+                                                oauthAvailable
+                                                    ? socialBtnStyle
+                                                    : disabledSocialBtnStyle
+                                            }
                                         >
                                             <Github size={18} />
                                             Continue with GitHub
@@ -437,6 +483,7 @@ export default function Register() {
                                                 value={form.name}
                                                 onChange={handleChange}
                                                 required
+                                                autoComplete="name"
                                                 style={inputStyle}
                                             />
                                         </div>
@@ -453,6 +500,7 @@ export default function Register() {
                                                 value={form.email}
                                                 onChange={handleChange}
                                                 required
+                                                autoComplete="email"
                                                 style={inputStyle}
                                             />
                                         </div>
@@ -471,6 +519,7 @@ export default function Register() {
                                                     onChange={handleChange}
                                                     required
                                                     minLength={6}
+                                                    autoComplete="new-password"
                                                     style={inputStyle}
                                                 />
                                             </div>
@@ -490,6 +539,7 @@ export default function Register() {
                                                     value={form.password_confirmation}
                                                     onChange={handleChange}
                                                     required
+                                                    autoComplete="new-password"
                                                     style={inputStyle}
                                                 />
                                             </div>
@@ -556,6 +606,18 @@ export default function Register() {
                                             Log in
                                         </Link>
                                     </p>
+
+                                    {!oauthAvailable && (
+                                        <p
+                                            className="text-center mt-3 mb-0"
+                                            style={{
+                                                color: colors.muted,
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            OAuth buttons are disabled because the API URL is not set.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>
