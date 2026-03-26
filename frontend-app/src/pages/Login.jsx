@@ -33,16 +33,12 @@ export default function Login() {
 
     const navigate = useNavigate();
 
-    /**
-     * Use the deployed API URL from Vite env first.
-     * Support both names temporarily in case one is already used elsewhere.
-     * Only use localhost while developing locally.
-     */
     const apiBaseUrl = useMemo(() => {
         const envUrl =
-            import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+            import.meta.env.VITE_API_URL ||
+            import.meta.env.VITE_API_BASE_URL;
 
-        if (envUrl) {
+        if (envUrl && envUrl.trim() !== "") {
             return envUrl.replace(/\/+$/, "");
         }
 
@@ -53,30 +49,34 @@ export default function Login() {
         return "";
     }, []);
 
+    const oauthAvailable = Boolean(apiBaseUrl);
+
     const handleGoogleLogin = () => {
         setError("");
+        setMessage("");
 
-        if (!apiBaseUrl) {
+        if (!oauthAvailable) {
             setError(
-                "OAuth configuration is missing. Please set VITE_API_URL in your deployed frontend environment."
+                "OAuth is not configured. Set VITE_API_URL in your frontend environment."
             );
             return;
         }
 
-        window.location.href = `${apiBaseUrl}/auth/google/redirect`;
+        window.location.assign(`${apiBaseUrl}/auth/google/redirect`);
     };
 
     const handleGithubLogin = () => {
         setError("");
+        setMessage("");
 
-        if (!apiBaseUrl) {
+        if (!oauthAvailable) {
             setError(
-                "OAuth configuration is missing. Please set VITE_API_URL in your deployed frontend environment."
+                "OAuth is not configured. Set VITE_API_URL in your frontend environment."
             );
             return;
         }
 
-        window.location.href = `${apiBaseUrl}/auth/github/redirect`;
+        window.location.assign(`${apiBaseUrl}/auth/github/redirect`);
     };
 
     const handleSubmit = async (e) => {
@@ -86,13 +86,16 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            const response = await api.post("/auth/login", { email, password });
+            const response = await api.post("/auth/login", {
+                email: email.trim(),
+                password,
+            });
 
             const token = response.data?.data?.token || response.data?.token;
             const user = response.data?.data?.user || response.data?.user;
 
             if (!token) {
-                setError("Login succeeded, but no token was received from the server.");
+                setError("Login succeeded, but no token was returned.");
                 return;
             }
 
@@ -108,15 +111,15 @@ export default function Login() {
                 navigate("/dashboard");
             }, 1000);
         } catch (err) {
-            if (err.response?.data?.errors) {
-                const firstError = Object.values(err.response.data.errors)[0]?.[0];
-                setError(firstError || "Validation failed.");
-            } else {
-                setError(
-                    err.response?.data?.message ||
-                    "Failed to log in. Please check your credentials."
-                );
-            }
+            const firstValidationError = err.response?.data?.errors
+                ? Object.values(err.response.data.errors)[0]?.[0]
+                : null;
+
+            setError(
+                firstValidationError ||
+                err.response?.data?.message ||
+                "Failed to log in. Please check your credentials and try again."
+            );
         } finally {
             setIsLoading(false);
         }
@@ -158,6 +161,12 @@ export default function Login() {
         cursor: "pointer",
     };
 
+    const disabledSocialBtnStyle = {
+        ...socialBtnStyle,
+        opacity: 0.6,
+        cursor: "not-allowed",
+    };
+
     const benefits = [
         "Return to your notes, tasks, and focus sessions",
         "Keep your academic workflow structured and visible",
@@ -168,7 +177,8 @@ export default function Login() {
         <div
             className="min-vh-100 d-flex align-items-center py-4 py-lg-5"
             style={{
-                background: "linear-gradient(180deg, #0F2744 0%, #183B63 55%, #244A73 100%)",
+                background:
+                    "linear-gradient(180deg, #0F2744 0%, #183B63 55%, #244A73 100%)",
                 fontFamily:
                     'Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
             }}
@@ -335,7 +345,12 @@ export default function Login() {
                                         <button
                                             type="button"
                                             onClick={handleGoogleLogin}
-                                            style={socialBtnStyle}
+                                            disabled={!oauthAvailable}
+                                            style={
+                                                oauthAvailable
+                                                    ? socialBtnStyle
+                                                    : disabledSocialBtnStyle
+                                            }
                                         >
                                             <svg
                                                 viewBox="0 0 24 24"
@@ -343,10 +358,22 @@ export default function Login() {
                                                 height="18"
                                                 xmlns="http://www.w3.org/2000/svg"
                                             >
-                                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                                                <path
+                                                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                                    fill="#4285F4"
+                                                />
+                                                <path
+                                                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                                    fill="#34A853"
+                                                />
+                                                <path
+                                                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                                    fill="#FBBC05"
+                                                />
+                                                <path
+                                                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                                    fill="#EA4335"
+                                                />
                                             </svg>
                                             Continue with Google
                                         </button>
@@ -354,7 +381,12 @@ export default function Login() {
                                         <button
                                             type="button"
                                             onClick={handleGithubLogin}
-                                            style={socialBtnStyle}
+                                            disabled={!oauthAvailable}
+                                            style={
+                                                oauthAvailable
+                                                    ? socialBtnStyle
+                                                    : disabledSocialBtnStyle
+                                            }
                                         >
                                             <Github size={18} />
                                             Continue with GitHub
@@ -364,14 +396,20 @@ export default function Login() {
                                     <div className="d-flex align-items-center my-4">
                                         <div
                                             className="flex-grow-1"
-                                            style={{ height: "1px", backgroundColor: colors.border }}
+                                            style={{
+                                                height: "1px",
+                                                backgroundColor: colors.border,
+                                            }}
                                         />
                                         <span className="px-3 small" style={{ color: colors.muted }}>
                                             or sign in with email
                                         </span>
                                         <div
                                             className="flex-grow-1"
-                                            style={{ height: "1px", backgroundColor: colors.border }}
+                                            style={{
+                                                height: "1px",
+                                                backgroundColor: colors.border,
+                                            }}
                                         />
                                     </div>
 
@@ -387,20 +425,15 @@ export default function Login() {
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 required
+                                                autoComplete="email"
                                                 style={inputStyle}
                                             />
                                         </div>
 
                                         <div className="mb-3">
-                                            <div className="d-flex justify-content-between align-items-center mb-2">
-                                                <label
-                                                    htmlFor="password"
-                                                    style={{ ...labelStyle, marginBottom: 0 }}
-                                                >
-                                                    Password
-                                                </label>
-                                            </div>
-
+                                            <label htmlFor="password" style={labelStyle}>
+                                                Password
+                                            </label>
                                             <input
                                                 type="password"
                                                 id="password"
@@ -408,6 +441,7 @@ export default function Login() {
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 required
+                                                autoComplete="current-password"
                                                 style={inputStyle}
                                             />
                                         </div>
@@ -472,6 +506,18 @@ export default function Login() {
                                             Sign up
                                         </Link>
                                     </p>
+
+                                    {!oauthAvailable && (
+                                        <p
+                                            className="text-center mt-3 mb-0"
+                                            style={{
+                                                color: colors.muted,
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            OAuth buttons are disabled because the API URL is not set.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>
