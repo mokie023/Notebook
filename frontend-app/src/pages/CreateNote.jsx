@@ -1,16 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
 import Topbar from "../components/layout/Topbar";
 import api from "../api/axios";
 
-export default function ViewNote() {
-    const { id } = useParams();
+export default function CreateNote() {
     const navigate = useNavigate();
 
-    const [note, setNote] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [deleting, setDeleting] = useState(false);
+    const [title, setTitle] = useState("");
+    const [content, setContent] = useState("");
+    const [noteCategoryId, setNoteCategoryId] = useState("");
+    const [categories, setCategories] = useState([]);
+    const [isPinned, setIsPinned] = useState(false);
+    const [loadingCategories, setLoadingCategories] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
@@ -23,10 +26,10 @@ export default function ViewNote() {
             text: "#0F172A",
             muted: "#475569",
             border: "#D9E2EC",
-            danger: "#B42318",
-            dangerBg: "#FEF3F2",
             success: "#027A48",
             successBg: "#ECFDF3",
+            danger: "#B42318",
+            dangerBg: "#FEF3F2",
         }),
         []
     );
@@ -38,107 +41,75 @@ export default function ViewNote() {
     };
 
     useEffect(() => {
-        async function fetchNote() {
+        async function fetchCategories() {
             try {
-                setLoading(true);
-                setError("");
-                setSuccess("");
+                setLoadingCategories(true);
 
-                const res = await api.get(`/notes/${id}`);
-                const noteData = res.data?.data || res.data;
+                const res = await api.get("/note-categories");
+                const categoryData = Array.isArray(res.data?.data)
+                    ? res.data.data
+                    : Array.isArray(res.data)
+                        ? res.data
+                        : [];
 
-                setNote(noteData);
+                setCategories(categoryData);
             } catch (err) {
-                setError(
-                    err.response?.data?.message ||
-                    "Failed to load note. Please try again."
-                );
+                console.error("Failed to load categories:", err);
             } finally {
-                setLoading(false);
+                setLoadingCategories(false);
             }
         }
 
-        fetchNote();
-    }, [id]);
+        fetchCategories();
+    }, []);
 
-    async function handleDelete() {
-        const confirmed = window.confirm(
-            "Are you sure you want to delete this note?"
-        );
+    async function handleSubmit(e) {
+        e.preventDefault();
+        setError("");
+        setSuccess("");
 
-        if (!confirmed) return;
+        if (!title.trim()) {
+            setError("Title is required.");
+            return;
+        }
 
         try {
-            setDeleting(true);
-            setError("");
-            setSuccess("");
+            setSubmitting(true);
 
-            await api.delete(`/notes/${id}`);
-            setSuccess("Note deleted successfully.");
+            const payload = {
+                title: title.trim(),
+                content: content.trim(),
+                note_category_id: noteCategoryId || null,
+                is_pinned: isPinned,
+            };
+
+            const res = await api.post("/notes", payload);
+            const createdNote = res.data?.data || res.data;
+
+            setSuccess("Note created successfully.");
 
             setTimeout(() => {
-                navigate("/notes");
+                navigate(createdNote?.id ? `/notes/${createdNote.id}` : "/notes");
             }, 800);
         } catch (err) {
             setError(
                 err.response?.data?.message ||
-                "Failed to delete note. Please try again."
+                "Failed to create note. Please try again."
             );
         } finally {
-            setDeleting(false);
+            setSubmitting(false);
         }
     }
 
-    function formatDate(dateValue) {
-        if (!dateValue) return "N/A";
-
-        const date = new Date(dateValue);
-
-        if (Number.isNaN(date.getTime())) return "N/A";
-
-        return date.toLocaleString();
-    }
-
-    function resolveFileUrl(filePath) {
-        if (!filePath) return null;
-
-        if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
-            return filePath;
-        }
-
-        const apiBase = import.meta.env.VITE_API_URL || "";
-        const cleanApiBase = apiBase.replace(/\/api\/v1\/?$/, "");
-        const cleanPath = filePath.startsWith("/") ? filePath : `/${filePath}`;
-
-        return cleanApiBase ? `${cleanApiBase}${cleanPath}` : cleanPath;
-    }
-
-    if (loading) {
-        return (
-            <AppLayout>
-                <Topbar title="View Note" subtitle="Loading your note..." />
-                <div className="p-4 p-lg-5">
-                    <p style={{ color: colors.muted }}>Loading note...</p>
-                </div>
-            </AppLayout>
-        );
-    }
-
-    if (error && !note) {
-        return (
-            <AppLayout>
-                <Topbar
-                    title="View Note"
-                    subtitle="Something went wrong while loading the note."
-                />
-                <div className="p-4 p-lg-5">
-                    <div className="alert alert-danger" role="alert">
-                        {error}
-                    </div>
-
+    return (
+        <AppLayout>
+            <Topbar
+                title="Create Note"
+                subtitle="Write and save a new note for your academic workflow."
+                rightContent={
                     <Link
                         to="/notes"
-                        className="btn rounded-3"
+                        className="btn rounded-3 text-decoration-none"
                         style={{
                             backgroundColor: colors.background,
                             color: colors.primary,
@@ -148,93 +119,6 @@ export default function ViewNote() {
                     >
                         Back to Notes
                     </Link>
-                </div>
-            </AppLayout>
-        );
-    }
-
-    if (!note) {
-        return (
-            <AppLayout>
-                <Topbar
-                    title="View Note"
-                    subtitle="The requested note could not be found."
-                />
-                <div className="p-4 p-lg-5">
-                    <div className="rounded-4 p-4" style={cardStyle}>
-                        <h5 style={{ color: colors.text }}>Note not found</h5>
-                        <p className="mb-3" style={{ color: colors.muted }}>
-                            This note may have been deleted or is no longer available.
-                        </p>
-
-                        <Link
-                            to="/notes"
-                            className="btn rounded-3"
-                            style={{
-                                backgroundColor: colors.primary,
-                                color: colors.white,
-                                border: `1px solid ${colors.primary}`,
-                                fontWeight: 600,
-                            }}
-                        >
-                            Back to Notes
-                        </Link>
-                    </div>
-                </div>
-            </AppLayout>
-        );
-    }
-
-    const fileUrl = resolveFileUrl(note.file_path);
-
-    return (
-        <AppLayout>
-            <Topbar
-                title={note.title || "Untitled Note"}
-                subtitle="Review your note details, written content, and attached file."
-                rightContent={
-                    <div className="d-flex flex-wrap gap-2">
-                        <Link
-                            to="/notes"
-                            className="btn rounded-3 text-decoration-none"
-                            style={{
-                                backgroundColor: colors.background,
-                                color: colors.primary,
-                                border: `1px solid ${colors.border}`,
-                                fontWeight: 600,
-                            }}
-                        >
-                            Back
-                        </Link>
-
-                        <Link
-                            to={`/notes/${note.id}/edit`}
-                            className="btn rounded-3 text-decoration-none"
-                            style={{
-                                backgroundColor: colors.white,
-                                color: colors.primary,
-                                border: `1px solid ${colors.border}`,
-                                fontWeight: 600,
-                            }}
-                        >
-                            Edit
-                        </Link>
-
-                        <button
-                            type="button"
-                            onClick={handleDelete}
-                            disabled={deleting}
-                            className="btn rounded-3"
-                            style={{
-                                backgroundColor: colors.dangerBg,
-                                color: colors.danger,
-                                border: `1px solid ${colors.border}`,
-                                fontWeight: 600,
-                            }}
-                        >
-                            {deleting ? "Deleting..." : "Delete"}
-                        </button>
-                    </div>
                 }
             />
 
@@ -254,7 +138,15 @@ export default function ViewNote() {
                 )}
 
                 {error && (
-                    <div className="alert alert-danger mb-4" role="alert">
+                    <div
+                        className="alert mb-4"
+                        role="alert"
+                        style={{
+                            backgroundColor: colors.dangerBg,
+                            color: colors.danger,
+                            border: `1px solid ${colors.border}`,
+                        }}
+                    >
                         {error}
                     </div>
                 )}
@@ -262,174 +154,142 @@ export default function ViewNote() {
                 <div className="row g-4">
                     <div className="col-lg-8">
                         <div className="rounded-4 p-4 p-lg-5" style={cardStyle}>
-                            <div className="d-flex align-items-start gap-3 mb-4">
-                                <div
-                                    className="d-flex align-items-center justify-content-center rounded-3"
-                                    style={{
-                                        width: "48px",
-                                        height: "48px",
-                                        backgroundColor: colors.primaryTint,
-                                        color: colors.primary,
-                                        flexShrink: 0,
-                                        fontSize: "1.2rem",
-                                    }}
-                                >
-                                    📝
-                                </div>
-
-                                <div>
-                                    <h2
-                                        className="mb-2 fw-semibold"
+                            <form onSubmit={handleSubmit}>
+                                <div className="mb-4">
+                                    <label
+                                        htmlFor="title"
+                                        className="form-label fw-semibold"
                                         style={{ color: colors.text }}
                                     >
-                                        {note.title || "Untitled Note"}
-                                    </h2>
-
-                                    {note.category?.name && (
-                                        <span
-                                            className="badge rounded-pill"
-                                            style={{
-                                                backgroundColor:
-                                                    note.category?.color || colors.primaryTint,
-                                                color: colors.primary,
-                                                fontWeight: 600,
-                                            }}
-                                        >
-                                            {note.category.name}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-
-                            <hr style={{ borderColor: colors.border }} />
-
-                            <div className="mt-4">
-                                <h5 className="mb-3" style={{ color: colors.text }}>
-                                    Content
-                                </h5>
-
-                                {note.content ? (
-                                    <div
+                                        Note Title
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="title"
+                                        className="form-control form-control-lg rounded-3"
+                                        placeholder="Enter your note title"
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
                                         style={{
-                                            color: colors.text,
-                                            lineHeight: 1.9,
-                                            whiteSpace: "pre-line",
-                                            fontSize: "1rem",
-                                        }}
-                                    >
-                                        {note.content}
-                                    </div>
-                                ) : (
-                                    <p className="mb-0" style={{ color: colors.muted }}>
-                                        This note has no written content.
-                                    </p>
-                                )}
-                            </div>
-
-                            {note.file_name && (
-                                <div className="mt-5">
-                                    <h5 className="mb-3" style={{ color: colors.text }}>
-                                        Attached File
-                                    </h5>
-
-                                    <div
-                                        className="rounded-4 p-4"
-                                        style={{
-                                            backgroundColor: colors.background,
                                             border: `1px solid ${colors.border}`,
+                                            boxShadow: "none",
+                                        }}
+                                    />
+                                </div>
+
+                                <div className="mb-4">
+                                    <label
+                                        htmlFor="category"
+                                        className="form-label fw-semibold"
+                                        style={{ color: colors.text }}
+                                    >
+                                        Category
+                                    </label>
+                                    <select
+                                        id="category"
+                                        className="form-select form-select-lg rounded-3"
+                                        value={noteCategoryId}
+                                        onChange={(e) => setNoteCategoryId(e.target.value)}
+                                        disabled={loadingCategories}
+                                        style={{
+                                            border: `1px solid ${colors.border}`,
+                                            boxShadow: "none",
                                         }}
                                     >
-                                        <p className="mb-2" style={{ color: colors.text }}>
-                                            <strong>File:</strong> {note.file_name}
-                                        </p>
-
-                                        {note.file_type && (
-                                            <p className="mb-2" style={{ color: colors.muted }}>
-                                                <strong>Type:</strong> {note.file_type}
-                                            </p>
-                                        )}
-
-                                        {note.file_size && (
-                                            <p className="mb-3" style={{ color: colors.muted }}>
-                                                <strong>Size:</strong> {note.file_size} bytes
-                                            </p>
-                                        )}
-
-                                        {fileUrl && (
-                                            <a
-                                                href={fileUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="btn rounded-3"
-                                                style={{
-                                                    backgroundColor: colors.primary,
-                                                    color: colors.white,
-                                                    border: `1px solid ${colors.primary}`,
-                                                    fontWeight: 600,
-                                                }}
-                                            >
-                                                Open File
-                                            </a>
-                                        )}
-                                    </div>
+                                        <option value="">No category</option>
+                                        {categories.map((category) => (
+                                            <option key={category.id} value={category.id}>
+                                                {category.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
-                            )}
+
+                                <div className="mb-4">
+                                    <label
+                                        htmlFor="content"
+                                        className="form-label fw-semibold"
+                                        style={{ color: colors.text }}
+                                    >
+                                        Content
+                                    </label>
+                                    <textarea
+                                        id="content"
+                                        className="form-control rounded-3"
+                                        rows="10"
+                                        placeholder="Write your note content here..."
+                                        value={content}
+                                        onChange={(e) => setContent(e.target.value)}
+                                        style={{
+                                            border: `1px solid ${colors.border}`,
+                                            boxShadow: "none",
+                                            resize: "vertical",
+                                        }}
+                                    />
+                                </div>
+
+                                <div className="form-check mb-4">
+                                    <input
+                                        className="form-check-input"
+                                        type="checkbox"
+                                        id="isPinned"
+                                        checked={isPinned}
+                                        onChange={(e) => setIsPinned(e.target.checked)}
+                                    />
+                                    <label
+                                        className="form-check-label fw-medium"
+                                        htmlFor="isPinned"
+                                        style={{ color: colors.text }}
+                                    >
+                                        Pin this note
+                                    </label>
+                                </div>
+
+                                <div className="d-flex gap-2 flex-wrap">
+                                    <button
+                                        type="submit"
+                                        disabled={submitting}
+                                        className="btn rounded-3 px-4"
+                                        style={{
+                                            backgroundColor: colors.primary,
+                                            color: colors.white,
+                                            border: `1px solid ${colors.primary}`,
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        {submitting ? "Creating..." : "Create Note"}
+                                    </button>
+
+                                    <Link
+                                        to="/notes"
+                                        className="btn rounded-3 px-4 text-decoration-none"
+                                        style={{
+                                            backgroundColor: colors.white,
+                                            color: colors.primary,
+                                            border: `1px solid ${colors.border}`,
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        Cancel
+                                    </Link>
+                                </div>
+                            </form>
                         </div>
                     </div>
 
                     <div className="col-lg-4">
                         <div className="rounded-4 p-4" style={cardStyle}>
-                            <h5 className="mb-4" style={{ color: colors.text }}>
-                                Note Details
+                            <h5 className="mb-3" style={{ color: colors.text }}>
+                                Tips
                             </h5>
-
-                            <div className="mb-3">
-                                <div
-                                    className="small text-uppercase fw-semibold mb-1"
-                                    style={{ color: colors.muted }}
-                                >
-                                    Created
-                                </div>
-                                <div style={{ color: colors.text }}>
-                                    {formatDate(note.created_at)}
-                                </div>
-                            </div>
-
-                            <div className="mb-3">
-                                <div
-                                    className="small text-uppercase fw-semibold mb-1"
-                                    style={{ color: colors.muted }}
-                                >
-                                    Last Updated
-                                </div>
-                                <div style={{ color: colors.text }}>
-                                    {formatDate(note.updated_at)}
-                                </div>
-                            </div>
-
-                            <div className="mb-3">
-                                <div
-                                    className="small text-uppercase fw-semibold mb-1"
-                                    style={{ color: colors.muted }}
-                                >
-                                    Category
-                                </div>
-                                <div style={{ color: colors.text }}>
-                                    {note.category?.name || "Uncategorized"}
-                                </div>
-                            </div>
-
-                            <div>
-                                <div
-                                    className="small text-uppercase fw-semibold mb-1"
-                                    style={{ color: colors.muted }}
-                                >
-                                    Has File
-                                </div>
-                                <div style={{ color: colors.text }}>
-                                    {note.file_name ? "Yes" : "No"}
-                                </div>
-                            </div>
+                            <ul
+                                className="mb-0 ps-3"
+                                style={{ color: colors.muted, lineHeight: 1.8 }}
+                            >
+                                <li>Give your note a clear, searchable title.</li>
+                                <li>Use categories to stay organized.</li>
+                                <li>Pin important notes for quick access later.</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
