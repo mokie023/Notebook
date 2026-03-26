@@ -82,14 +82,6 @@ class AuthController extends Controller
             return $this->error('Invalid provider', 400);
         }
 
-        dd([
-            'provider' => $provider,
-            'app_url' => config('app.url'),
-            'frontend_url' => env('FRONTEND_URL'),
-            'google_redirect' => config('services.google.redirect'),
-            'github_redirect' => config('services.github.redirect'),
-        ]);
-
         try {
             return Socialite::driver($provider)->stateless()->redirect();
         } catch (\Throwable $e) {
