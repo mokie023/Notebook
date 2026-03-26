@@ -37,8 +37,16 @@ export default function ViewNote() {
         boxShadow: "0 14px 34px rgba(15, 39, 68, 0.07)",
     };
 
+    const isValidId = id !== undefined && id !== null && id !== "" && id !== "undefined";
+
     useEffect(() => {
         async function fetchNote() {
+            if (!isValidId) {
+                setError("Invalid note ID.");
+                setLoading(false);
+                return;
+            }
+
             try {
                 setLoading(true);
                 setError("");
@@ -59,9 +67,14 @@ export default function ViewNote() {
         }
 
         fetchNote();
-    }, [id]);
+    }, [id, isValidId]);
 
     async function handleDelete() {
+        if (!isValidId) {
+            setError("Invalid note ID.");
+            return;
+        }
+
         const confirmed = window.confirm(
             "Are you sure you want to delete this note?"
         );
@@ -116,10 +129,7 @@ export default function ViewNote() {
     if (loading) {
         return (
             <AppLayout>
-                <Topbar
-                    title="View Note"
-                    subtitle="Loading your note..."
-                />
+                <Topbar title="View Note" subtitle="Loading your note..." />
                 <div className="p-4 p-lg-5">
                     <p style={{ color: colors.muted }}>Loading note...</p>
                 </div>
